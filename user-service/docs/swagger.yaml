@@ -1,0 +1,64 @@
+basePath: /api/user
+definitions:
+  transport_http.UserDTO:
+    properties:
+      id:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+      version:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Сервис профилей пользователей kolesa.
+  title: User Service API
+  version: "1.0"
+paths:
+  /{id}:
+    get:
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/transport_http.UserDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить профиль пользователя
+      tags:
+      - user
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - user
+swagger: "2.0"
