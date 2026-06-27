@@ -77,5 +77,42 @@ jobs:
       #билдит образ сервиса
       - name: Docker build
         run: docker build -f cmd/Dockerfile .
+  # ────────────────────────────────────────
+  # USER SERVICE
+  # ─────────────────────────────────────────
+  user-service:
+    name: user-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.user == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: user-service
 
-  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache-dependency-path: user-service/go.sum
+
+      - name: Install librdkafka
+        run: sudo apt-get install -y librdkafka-dev
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./... -cover
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: latest
+          working-directory: user-service
+
+      - name: Docker build
+        run: docker build -f cmd/Dockerfile .
