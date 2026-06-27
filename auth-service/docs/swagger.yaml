@@ -1,0 +1,210 @@
+basePath: /api/auth
+definitions:
+  auth_transport_http.CreateUserRequest:
+    properties:
+      password:
+        type: string
+      phone_number:
+        maxLength: 15
+        minLength: 10
+        type: string
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth_transport_http.LoginRequest:
+    properties:
+      password:
+        minLength: 8
+        type: string
+      phone_number:
+        maxLength: 15
+        minLength: 10
+        type: string
+    required:
+    - password
+    - phone_number
+    type: object
+  auth_transport_http.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  auth_transport_http.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  auth_transport_http.RefreshResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  auth_transport_http.UserDTOResponse:
+    properties:
+      id:
+        type: string
+      phone_number:
+        type: string
+      username:
+        type: string
+      version:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Сервис аутентификации и регистрации пользователей kolesa.
+  title: Auth Service API
+  version: "1.0"
+paths:
+  /authorized:
+    get:
+      description: Возвращает 200, если переданный access-токен валиден
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Проверка авторизации
+      tags:
+      - auth
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя по номеру телефона и паролю
+      parameters:
+      - description: Данные входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth_transport_http.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth_transport_http.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Вход
+      tags:
+      - auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Выдаёт новый access-токен по валидному refresh-токену
+      parameters:
+      - description: Refresh-токен
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth_transport_http.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth_transport_http.RefreshResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновление access-токена
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя по номеру телефона и паролю
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth_transport_http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth_transport_http.UserDTOResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

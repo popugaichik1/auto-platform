@@ -1,0 +1,81 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────
+  # ОПРЕДЕЛЯЕМ, КАКИЕ СЕРВИСЫ РЕАЛЬНО ИЗМЕНИЛИСЬ
+  # ─────────────────────────────────────────
+  detect-changes:
+    name: detect-changes
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      listing: ${{ steps.filter.outputs.listing }}
+      user: ${{ steps.filter.outputs.user }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Filter changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'auth-service/**'
+            listing:
+              - 'listing-service/**'
+            user:
+              - 'user-service/**'
+
+  # ─────────────────────────────────────────
+  # AUTH SERVICE
+  # ─────────────────────────────────────────
+  auth-service:
+    name: auth-service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auth-service
+
+    steps:
+      #клонируем код на нашу машину
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      #устанавливает go на ВМ
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache-dependency-path: auth-service/go.sum
+
+      - name: Install librdkafka
+        run: sudo apt-get install -y librdkafka-dev
+
+      #компилирует  весь код сервиса
+      - name: Build
+        run: go build ./...
+
+      #запускает unit-тесты сервиса
+      - name: Test
+        run: go test ./... -cover
+
+      #запускает агрегатор линтера для go
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: latest
+          working-directory: auth-service
+
+      #билдит образ сервиса
+      - name: Docker build
+        run: docker build -f cmd/Dockerfile .
+
+  

@@ -1,0 +1,70 @@
+services:
+  auth-service:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/Dockerfile
+    container_name: auth-service
+    env_file:
+      - ${PROJECT_ROOT}/.env
+    environment:
+      - HTTP_ADDR=:5050
+      - POSTGRES_HOST=auth-postgres
+      - LOGGER_FOLDER=/app/out/logs
+    volumes:
+      - ${PROJECT_ROOT}/out/logs:/app/out/logs
+    ports:
+      - "5050:5050"
+      #в случае ошибки происходит перезапуск контейнера, что позволяет избежать простоев приложения
+    restart: always
+
+    networks:
+      - microservices-network
+
+
+  auth-postgres:
+    image: postgres:18.1-bookworm
+    container_name: auth-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+    restart: always
+
+    networks:
+      - microservices-network
+
+  auth-postgres-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ${PROJECT_ROOT}/migrations:/migrations
+    networks:
+      - microservices-network
+
+  port-forwarder:
+    image: alpine/socat:1.8.0.3
+    container_name: auth-port-forwarder
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:auth-postgres:5432
+    ports:
+      - "127.0.0.1:5434:5432"
+    networks:
+      - microservices-network
+      
+  swagger:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile_inline: |
+        FROM golang:1.24.1-alpine
+        RUN apk add --no-cache git
+        RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+        WORKDIR /code
+        ENTRYPOINT ["swag"]
+    volumes:
+      - ${PROJECT_ROOT}:/code
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true
