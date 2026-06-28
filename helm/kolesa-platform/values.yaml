@@ -136,3 +136,38 @@ services:
       resources:
         requests: { cpu: 100m, memory: 128Mi }
         limits: { cpu: 500m, memory: 512Mi }
+
+  messenger:
+    image:
+      repository: messenger-service
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    replicaCount: 3
+    containerPort: 7070
+    routePath: /api/messenger
+    protectedPaths:
+      - /api/messenger/mine
+      - /api/messenger/ws
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 250m, memory: 256Mi }
+    env:
+      HTTP_SHUTDOWN_TIMEOUT: "30s"
+      ALLOWED_ORIGINS: "*"
+      LOGGER_LEVEL: "INFO"
+      LOGGER_FOLDER: "/app/out/logs"
+      TIME_ZONE: "UTC"
+      POSTGRES_PORT: "5432"
+      POSTGRES_TIMEOUT: "10s"
+    # включает инъекцию LISTING_SERVICE_URL в app.yaml — единственный
+    # синхронный поход в другой сервис (узнать продавца при создании треда)
+    callsListingService: true
+    postgres:
+      enabled: true
+      database: messenger_db
+      username: messenger_user
+      password: "messenger-db-pass"
+      storageSize: 1Gi
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }

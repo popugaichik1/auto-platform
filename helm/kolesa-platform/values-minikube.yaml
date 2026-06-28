@@ -1,12 +1,3 @@
-# Локальный оверрайд для теста в minikube. Накладывается поверх values.yaml:
-#   helm install kolesa . -n kolesa -f values.yaml -f values-minikube.yaml
-#   helm upgrade kolesa . -n kolesa -f values.yaml -f values-minikube.yaml
-#
-# Образы собраны и загружены в minikube вручную как auth-service:1.0.0,
-# listing-service:1.0.0, user-service:1.0.0 — без registry-префикса.
-#
-# kafkaBrokers здесь НЕ переопределяется — нужное значение (test-kafka:9092)
-# уже стоит прямо в values.yaml.
 global:
   imageRegistry: ""
   kafkaBrokers: "test-kafka:9092"
@@ -24,6 +15,10 @@ services:
       tag: "1.0.0"
       pullPolicy: Never
   user:
+    image:
+      tag: "1.0.0"
+      pullPolicy: Never
+  messenger:
     image:
       tag: "1.0.0"
       pullPolicy: Never
