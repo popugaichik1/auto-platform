@@ -1,0 +1,121 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	core_config "messenger-service/internal/core/config"
+	core_logger "messenger-service/internal/core/logger"
+	core_pgx_pool "messenger-service/internal/core/repository/postgres/pool/pgx"
+	core_http_server "messenger-service/internal/core/transport/http/server"
+	core_kafka "messenger-service/internal/core/transport/kafka"
+	listing_client "messenger-service/internal/clients/listing"
+	messenger_repository "messenger-service/internal/features/messenger/repository"
+	messenger_service "messenger-service/internal/features/messenger/service"
+	messenger_transport_http "messenger-service/internal/features/messenger/transport/http"
+	messenger_transport_kafka "messenger-service/internal/features/messenger/transport/kafka"
+	messenger_transport_ws "messenger-service/internal/features/messenger/transport/ws"
+
+	"go.uber.org/zap"
+)
+
+// @title			Messenger Service API
+// @version		1.0
+// @description	Сервис переписки покупателей и продавцов kolesa.
+// @BasePath		/api/messenger
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+func main() {
+	cfg := core_config.NewConfigMust()
+	time.Local = cfg.TimeZone
+
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT, syscall.SIGTERM,
+	)
+	defer cancel()
+
+	// Init Logger
+	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
+	if err != nil {
+		fmt.Println("failed to init logger:", err)
+		os.Exit(1)
+	}
+	defer logger.Close()
+
+	// Init PostgreSQL
+	logger.Debug("initializing postgres connection pool")
+	postgresPool, err := core_pgx_pool.NewPool(ctx, core_pgx_pool.NewConfigMust())
+	if err != nil {
+		logger.Fatal("failed to init postgres pool", zap.Error(err))
+	}
+	defer postgresPool.Close()
+
+	// Init listing-service client — единственный синхронный поход в другой
+	// сервис, только чтобы узнать продавца при создании треда.
+	listingURL := os.Getenv("LISTING_SERVICE_URL")
+	if listingURL == "" {
+		logger.Fatal("LISTING_SERVICE_URL is not set")
+	}
+	listingClient := listing_client.NewClient(listingURL, listing_client.RetryConfig{
+		MaxRetries:     3,
+		InitialBackoff: 100 * time.Millisecond,
+		MaxBackoff:     2 * time.Second,
+		Budget:         5 * time.Second,
+	}, logger)
+
+	// Init Kafka producer (публикация message.sent для фан-аута между репликами)
+	kafkaProducer, err := messenger_transport_kafka.NewProducer(core_kafka.NewProducerConfigMust())
+	if err != nil {
+		logger.Fatal("failed to init kafka producer", zap.Error(err))
+	}
+	defer kafkaProducer.Close()
+
+	// Init Repository + Service
+	repo := messenger_repository.NewRepository(postgresPool)
+	svc := messenger_service.NewService(repo, listingClient, kafkaProducer, logger)
+
+	// Init WS Hub + handler — Hub передаётся и в HTTP-хендлер (регистрирует
+	// соединения), и в Kafka-консьюмер (доставляет фан-аут локально подключённым)
+	hub := messenger_transport_ws.NewHub()
+	wsHandler := messenger_transport_ws.NewHandler(hub, svc)
+
+	// Init Kafka fanout consumer
+	consumer, err := messenger_transport_kafka.NewConsumer(
+		core_kafka.NewConsumerConfigMust(),
+		hub,
+		core_kafka.TopicMessageSent,
+		logger,
+	)
+	if err != nil {
+		logger.Fatal("failed to init kafka fanout consumer", zap.Error(err))
+	}
+
+	go func() {
+		if err := consumer.Run(ctx); err != nil {
+			logger.Fatal("kafka fanout consumer run error", zap.Error(err))
+		}
+	}()
+
+	// Init HTTP Handler & Router
+	httpHandler := messenger_transport_http.NewHandler(svc, wsHandler)
+	router := httpHandler.InitRoutes(logger)
+
+	// Init HTTP Server
+	httpServer := core_http_server.NewHTTPServer(
+		core_http_server.NewConfigMust(),
+		logger,
+		router,
+	)
+
+	logger.Info("starting messenger-service", zap.String("addr", os.Getenv("HTTP_ADDR")))
+
+	if err := httpServer.Run(ctx); err != nil {
+		logger.Fatal("HTTP server error", zap.Error(err))
+	}
+}

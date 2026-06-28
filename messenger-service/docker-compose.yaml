@@ -1,0 +1,52 @@
+services:
+  messenger-service:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/Dockerfile
+    container_name: messenger-service
+    env_file:
+      - ${PROJECT_ROOT}/.env
+    environment:
+      - HTTP_ADDR=:7070
+      - POSTGRES_HOST=messenger-postgres
+      - LOGGER_FOLDER=/app/out/logs
+    volumes:
+      - ${PROJECT_ROOT}/out/logs:/app/out/logs
+    ports:
+      - "7070:7070"
+    restart: always
+    networks:
+      - microservices-network
+
+  messenger-postgres:
+    image: postgres:18.1-bookworm
+    container_name: messenger-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+    restart: always
+    networks:
+      - microservices-network
+
+  messenger-postgres-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ${PROJECT_ROOT}/migrations:/migrations
+    networks:
+      - microservices-network
+
+  port-forwarder:
+    image: alpine/socat:1.8.0.3
+    container_name: messenger-port-forwarder
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:messenger-postgres:5432
+    ports:
+      - "127.0.0.1:5436:5432"
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true

@@ -1,0 +1,70 @@
+package transport_kafka
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+
+	core_kafka "messenger-service/internal/core/transport/kafka"
+)
+
+type Producer struct {
+	producer *kafka.Producer
+}
+
+func NewProducer(config core_kafka.ProducerConfig) (*Producer, error) {
+	conf := kafka.ConfigMap{
+		"bootstrap.servers": config.BrokersString(),
+		"partitioner":       "random",
+	}
+	p, err := kafka.NewProducer(&conf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create producer: %w", err)
+	}
+	return &Producer{
+		producer: p,
+	}, nil
+}
+
+func (p *Producer) Publish(ctx context.Context, message core_kafka.Message) error {
+	body, err := json.Marshal(message.Payload)
+	if err != nil {
+		return fmt.Errorf("marshal payload: %w", err)
+	}
+
+	deliveryChan := make(chan kafka.Event, 1)
+	defer close(deliveryChan)
+
+	kafkaMsg := &kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &message.Topic,
+			Partition: kafka.PartitionAny,
+		},
+		Value: body,
+		Key:   []byte(message.Key),
+	}
+
+	if err := p.producer.Produce(kafkaMsg, deliveryChan); err != nil {
+		return fmt.Errorf("produce message: %w", err)
+	}
+l:
+	select {
+	case <-ctx.Done():
+		break l
+	case event := <-deliveryChan:
+		message := event.(*kafka.Message)
+
+		if message.TopicPartition.Error != nil {
+			return message.TopicPartition.Error
+		}
+	}
+
+	return nil
+}
+
+func (p *Producer) Close() {
+	p.producer.Flush(core_kafka.FlushTimeOut)
+	p.producer.Close()
+}
