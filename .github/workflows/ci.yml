@@ -31,6 +31,8 @@ jobs:
               - 'listing-service/**'
             user:
               - 'user-service/**'
+            messsenger:
+              - 'messenger-service/**'
 
   # ─────────────────────────────────────────
   # AUTH SERVICE
