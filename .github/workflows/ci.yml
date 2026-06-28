@@ -159,7 +159,7 @@ jobs:
       - name: Docker build
         run: docker build -f cmd/Dockerfile .
 # ─────────────────────────────────────────
-# MESSENGER SERVICE.
+# MESSENGER SERVICE
 # ─────────────────────────────────────────
   messenger-service:
     name: messenger-service
