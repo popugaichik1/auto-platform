@@ -1,0 +1,9 @@
+apiVersion: v2
+name: kolesa-platform
+description: auth-service, listing-service, user-service + Postgres-per-service, Redis cache
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+# Kafka — внешний Managed Service for Kafka в Timeweb Cloud, не самохостится
+# этим чартом. Адрес брокеров задаётся в values.yaml (global.kafkaBrokers).

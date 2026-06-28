@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	core_domain "github.com/zosinkin/social_network/internal/core/domain"
 	core_logger "github.com/zosinkin/social_network/internal/core/logger"
 	core_middleware "github.com/zosinkin/social_network/internal/core/transport/http/middleware"
-	auth_service "github.com/zosinkin/social_network/internal/features/auth/service"
 
 	_ "github.com/zosinkin/social_network/docs" // swagger docs
 )
@@ -52,13 +52,13 @@ type Service interface {
 		ctx context.Context,
 		refreshToken string,
 	) (string, error)
+
+	ValidateToken(tokenString string) (jwt.MapClaims, error)
 }
 
 
 func (h *AuthHTTPHandler) InitRoutes(
-	authService *auth_service.Service,
 	log *core_logger.Logger,
-	allowedOrigins []string,
 ) *gin.Engine {
 	// gin.New() (не gin.Default()) — иначе встроенные Logger()/Recovery()
 	// дублировали бы наши же Trace()/Panic() ниже.
@@ -67,7 +67,6 @@ func (h *AuthHTTPHandler) InitRoutes(
 	//регистрируем middleware в указанном порядке, это и есть порядок выполнения на входе
 	//каждый следующий вызывается через с.Next()
 	router.Use(
-		core_middleware.CORS(allowedOrigins),
 		core_middleware.RequestID(),
 		core_middleware.Logger(log),
 		core_middleware.Trace(),
@@ -81,10 +80,12 @@ func (h *AuthHTTPHandler) InitRoutes(
 		routes.POST("/register", h.Register)
 		routes.POST("/login", h.Login)
 		routes.POST("/refresh", h.RefreshToken)
+		// цель nginx auth-url на "защищённом" Ingress (см. helm); какие пути
+		// туда попадают решает сам Ingress, а не этот хендлер
+		routes.GET("/validate", h.ValidateAuth)
 	}
 
 	authorized := router.Group("/api/auth")
-	authorized.Use(core_middleware.AuthMiddleware(authService))
 	{
 		authorized.GET("/authorized", h.Authorized)
 	}

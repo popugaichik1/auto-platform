@@ -16,7 +16,6 @@ import (
 
 type ListingsHandler struct {
 	service Service
-	log     *core_logger.Logger
 }
 
 type Service interface {
@@ -32,14 +31,24 @@ type Service interface {
 	DeleteListing(ctx context.Context, id uuid.UUID, requesterID uuid.UUID) error
 }
 
-func NewListingsHandler(service Service, log *core_logger.Logger) *ListingsHandler {
-	return &ListingsHandler{service: service, log: log}
+func NewListingsHandler(service Service) *ListingsHandler {
+	return &ListingsHandler{service: service}
 }
 
-func (h *ListingsHandler) InitRoutes() *gin.Engine {
+func (h *ListingsHandler) InitRoutes(
+	log *core_logger.Logger,
+) *gin.Engine {
 	router := gin.Default()
-
-	
+	// RequestID переиспользует $request_id, выставленный nginx Ingress (см.
+	// helm/.../ingress.yaml), чтобы один и тот же запрос было видно под
+	// одним ID и в auth-service, и здесь. Logger кладёт его в контекст,
+	// чтобы достать через core_logger.FromContext в хендлерах.
+	router.Use(
+		core_middleware.RequestID(), 
+		core_middleware.Logger(log),
+		core_middleware.Trace(),
+		core_middleware.Panic(),
+	)
 
 	public := router.Group("/api/listings")
 	{
@@ -49,12 +58,14 @@ func (h *ListingsHandler) InitRoutes() *gin.Engine {
 		public.GET("/:id", h.GetListing)
 	}
 
-	authorized := router.Group("/api/listings")
-	authorized.Use(core_middleware.AuthMiddleware())
+	// отдельный префикс — чтобы Ingress мог защитить эти операции через
+	// auth-url по path, не пересекаясь с публичным GET /api/listings/:id
+	mine := router.Group("/api/listings/mine")
+	mine.Use(core_middleware.RequireUserID())
 	{
-		authorized.POST("", h.CreateListing)
-		authorized.PATCH("/:id", h.UpdateListing)
-		authorized.DELETE("/:id", h.DeleteListing)
+		mine.POST("", h.CreateListing)
+		mine.PATCH("/:id", h.UpdateListing)
+		mine.DELETE("/:id", h.DeleteListing)
 	}
 
 	return router

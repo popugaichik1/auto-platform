@@ -1,0 +1,138 @@
+# Образы публикуются CI в GitHub Container Registry. Поменяйте на свой
+# owner/repo либо передавайте через --set global.imageRegistry=...
+global:
+  imageRegistry: "ghcr.io/popugaichik1"
+  imagePullSecrets: []
+  # Managed Service for Kafka в Timeweb Cloud — не самохостится этим чартом.
+  # Подставьте реальный адрес брокеров после создания инстанса в панели
+  # Timeweb (Network > Managed Kafka). Если сервис требует SASL/TLS —
+  # это нужно будет добавить отдельно в core_kafka.ProducerConfig/ConsumerConfig
+  # сервисов (сейчас там только bootstrap.servers, без аутентификации).
+  kafkaBrokers: "host:9092"
+  # один образ для всех трёх Postgres-инстансов — в docker-compose у каждого
+  # сервиса свой контейнер, но версия везде одна и та же
+  postgresImage: "postgres:18.1-bookworm"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "kolesa.example.com"
+  tls:
+    enabled: false
+    secretName: ""
+
+#маленький однопоточный кэш(посмореть про многопоточку)
+redis:
+  enabled: true
+  image: "redis:7.4-alpine"
+  resources:
+    #минимум
+    requests: { cpu: 25m, memory: 32Mi }
+    #максимум
+    limits: { cpu: 100m, memory: 128Mi }
+
+services:
+  auth:
+    image:
+      repository: auth-service
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    replicaCount: 3
+    containerPort: 5050
+    routePath: /api/auth
+    # сюда идёт nginx auth_request на каждый запрос к этим путям (см. ingress.yaml)
+    protectedPaths:
+      - /api/auth/authorized
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 250m, memory: 256Mi }
+    env:
+      HTTP_SHUTDOWN_TIMEOUT: "30s"
+      ALLOWED_ORIGINS: "*"
+      ACCESS_TOKEN_EXPIRY: "15m"
+      REFRESH_TOKEN_EXPIRY: "168h"
+      LOGGER_LEVEL: "INFO"
+      LOGGER_FOLDER: "/app/out/logs"
+      TIME_ZONE: "UTC"
+      POSTGRES_PORT: "5432"
+      POSTGRES_TIMEOUT: "5s"
+    secretEnv:
+      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
+    postgres:
+      enabled: true
+      database: auth_db
+      username: auth_user
+      password: "auth-db-pass"
+      storageSize: 1Gi
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }
+
+  listing:
+    image:
+      repository: listing-service
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    replicaCount: 3
+    containerPort: 6060
+    routePath: /api/listings
+    protectedPaths:
+      - /api/listings/mine
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 250m, memory: 256Mi }
+    env:
+      HTTP_SHUTDOWN_TIMEOUT: "30s"
+      LOGGER_LEVEL: "INFO"
+      LOGGER_FOLDER: "/app/out/logs"
+      TIME_ZONE: "UTC"
+      POSTGRES_PORT: "5432"
+      POSTGRES_TIMEOUT: "10s"
+    secretEnv:
+      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
+    redis:
+      enabled: true
+      port: "6379"
+      timeout: "2s"
+    postgres:
+      enabled: true
+      database: listing_db
+      username: listing_user
+      password: "listing-db-pass"
+      storageSize: 1Gi
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }
+
+  user:
+    image:
+      repository: user-service
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    replicaCount: 3
+    containerPort: 5050
+    routePath: /api/user
+    protectedPaths:
+      - /api/user/me
+    resources:
+      requests: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 250m, memory: 256Mi }
+    env:
+      HTTP_SHUTDOWN_TIMEOUT: "30s"
+      ALLOWED_ORIGINS: "*"
+      LOGGER_LEVEL: "INFO"
+      LOGGER_FOLDER: "/app/out/logs"
+      TIME_ZONE: "UTC"
+      POSTGRES_PORT: "5432"
+      POSTGRES_TIMEOUT: "10s"
+    secretEnv:
+      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
+    postgres:
+      enabled: true
+      database: user_db
+      username: user_user
+      password: "user-db-pass"
+      storageSize: 1Gi
+      resources:
+        requests: { cpu: 100m, memory: 128Mi }
+        limits: { cpu: 500m, memory: 512Mi }

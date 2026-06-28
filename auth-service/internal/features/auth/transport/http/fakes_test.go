@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 
 	core_domain "github.com/zosinkin/social_network/internal/core/domain"
@@ -28,6 +29,7 @@ type fakeService struct {
 		refreshTokenTTL time.Duration,
 	) (string, string, error)
 	refreshAccessTokenFunc func(ctx context.Context, refreshToken string) (string, error)
+	validateTokenFunc      func(tokenString string) (jwt.MapClaims, error)
 }
 
 func (f *fakeService) Register(ctx context.Context, username, phoneNumber, password string) (core_domain.AuthUser, error) {
@@ -48,6 +50,10 @@ func (f *fakeService) LoginWithRefresh(
 
 func (f *fakeService) RefreshAccessToken(ctx context.Context, refreshToken string) (string, error) {
 	return f.refreshAccessTokenFunc(ctx, refreshToken)
+}
+
+func (f *fakeService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
+	return f.validateTokenFunc(tokenString)
 }
 
 // newTestContext строит *gin.Context с заданным телом запроса — без

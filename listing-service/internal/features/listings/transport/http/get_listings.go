@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	core_domain "listing-service/internal/core/domain"
+	core_logger "listing-service/internal/core/logger"
 	"go.uber.org/zap"
 )
 
@@ -32,6 +33,8 @@ import (
 //	@Failure		500				{object}	map[string]string
 //	@Router			/ [get]
 func (h *ListingsHandler) GetListings(c *gin.Context) {
+	log := core_logger.FromContext(c.Request.Context())
+
 	filter := core_domain.ListingFilter{
 		Page:  1,
 		Limit: 20,
@@ -88,7 +91,7 @@ func (h *ListingsHandler) GetListings(c *gin.Context) {
 
 	listings, err := h.service.GetListings(c.Request.Context(), filter)
 	if err != nil {
-		h.log.Error("get listings error", zap.Error(err))
+		log.Error("get listings error:", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}

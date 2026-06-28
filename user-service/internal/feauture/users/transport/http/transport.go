@@ -3,6 +3,8 @@ package transport_http
 import (
 	"context"
 	core_domain "user-service/internal/core/domain"
+	core_logger "user-service/internal/core/logger"
+	core_middleware "user-service/internal/core/transport/http/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,9 +41,17 @@ type Service interface {
 }
 
 
-func (h *HTTPHandler) InitRoutes() *gin.Engine {
+func (h *HTTPHandler) InitRoutes(
+	log *core_logger.Logger,
+) *gin.Engine {
 	router := gin.Default()
-
+	
+	router.Use(
+		core_middleware.RequestID(),
+		core_middleware.Logger(log),
+		core_middleware.Trace(),
+		core_middleware.Panic(),
+	)
 
 	routes := router.Group("/api/user")
 	{
@@ -50,5 +60,14 @@ func (h *HTTPHandler) InitRoutes() *gin.Engine {
 		routes.GET("/:id", h.GetProfile)
 		//routes.POST("/save", h.SaveUser)
 	}
+
+	// отдельный путь — чтобы Ingress мог защитить его через auth-url по path,
+	// не пересекаясь с публичным GET /api/user/:id
+	me := router.Group("/api/user/me")
+	me.Use(core_middleware.RequireUserID())
+	{
+		me.GET("", h.GetMyProfile)
+	}
+
 	return router
 }

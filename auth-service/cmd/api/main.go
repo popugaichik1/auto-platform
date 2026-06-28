@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -103,8 +102,7 @@ func main() {
 
 	
 	//Init router
-	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
-	router := authHTTPHandler.InitRoutes(authService, logger, allowedOrigins)
+	router := authHTTPHandler.InitRoutes(logger)
 
 
 	//Init Server

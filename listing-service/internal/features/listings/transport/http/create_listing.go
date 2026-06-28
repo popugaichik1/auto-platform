@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	core_logger "listing-service/internal/core/logger"
 	"go.uber.org/zap"
 )
 
@@ -19,8 +20,10 @@ import (
 //	@Failure		400		{object}	map[string]string
 //	@Failure		401		{object}	map[string]string
 //	@Failure		500		{object}	map[string]string
-//	@Router			/ [post]
+//	@Router			/mine [post]
 func (h *ListingsHandler) CreateListing(c *gin.Context) {
+	log := core_logger.FromContext(c.Request.Context())
+	
 	userID, ok := c.MustGet("user_id").(uuid.UUID)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -52,7 +55,7 @@ func (h *ListingsHandler) CreateListing(c *gin.Context) {
 		req.Region,
 	)
 	if err != nil {
-		h.log.Error("create listing error", zap.Error(err))
+		log.Error("create listing error", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}

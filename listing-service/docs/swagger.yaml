@@ -257,6 +257,51 @@ paths:
       summary: Список объявлений
       tags:
       - listings
+  /{id}:
+    get:
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/listings_transport_http.ListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить объявление по ID
+      tags:
+      - listings
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - listings
+  /mine:
     post:
       consumes:
       - application/json
@@ -298,7 +343,7 @@ paths:
       summary: Создать объявление
       tags:
       - listings
-  /{id}:
+  /mine/{id}:
     delete:
       description: Удаляет объявление (требует авторизации, только владелец)
       parameters:
@@ -337,35 +382,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Удалить объявление
-      tags:
-      - listings
-    get:
-      parameters:
-      - description: ID объявления
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/listings_transport_http.ListingResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Получить объявление по ID
       tags:
       - listings
     patch:
@@ -418,20 +434,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Обновить объявление
-      tags:
-      - listings
-  /health:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Health check
       tags:
       - listings
 securityDefinitions:

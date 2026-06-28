@@ -84,8 +84,8 @@ func main() {
 	svc := listings_service.NewService(cachedRepo, kafkaProducer, logger)
 
 	// Init Handler & Router
-	handler := listings_transport_http.NewListingsHandler(svc, logger)
-	router := handler.InitRoutes()
+	handler := listings_transport_http.NewListingsHandler(svc)
+	router := handler.InitRoutes(logger)
 
 	// Init HTTP Server
 	httpServer := core_http_server.NewHTTPServer(

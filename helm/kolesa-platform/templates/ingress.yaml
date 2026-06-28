@@ -1,0 +1,94 @@
+{{- if .Values.ingress.enabled }}
+# Требует allow-snippet-annotations: "true" в ConfigMap ingress-nginx
+# controller'а (отдельная настройка самого контроллера, не этого чарта).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: kolesa-platform
+  annotations:
+    # nginx сам минтит ID на каждый запрос — единая точка трассировки для
+    # всех сервисов, независимо от того, защищён путь или нет ($request_id
+    # — встроенная переменная nginx, уникальная на весь запрос, включая
+    # все его саброзапросы).
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Request-ID $request_id;
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          {{- range $key, $svc := .Values.services }}
+          - path: {{ $svc.routePath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "kolesa.appName" (dict "root" $ "key" $key) }}
+                port:
+                  number: 80
+          {{- end }}
+---
+{{- $hasProtected := false }}
+{{- range $key, $svc := .Values.services }}
+  {{- if $svc.protectedPaths }}
+    {{- $hasProtected = true }}
+  {{- end }}
+{{- end }}
+{{- if $hasProtected }}
+# Защищённые пути отдельным Ingress-объектом: nginx.ingress.kubernetes.io/auth-url
+# применяется на уровне всего Ingress, а не отдельного path, поэтому публичные
+# (см. выше) и защищённые пути нельзя смешивать в одном объекте. ingress-nginx
+# сам выбирает более специфичный path при совпадении (например
+# /api/listings/mine "перекрывает" /api/listings), так что порядок Ingress'ов
+# не важен.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress-protected
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/part-of: kolesa-platform
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: "http://{{ include "kolesa.appName" (dict "root" $ "key" "auth") }}.{{ .Release.Namespace }}.svc.cluster.local/api/auth/validate"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id"
+    # тот же $request_id, что и в публичном Ingress — для финального проксируемого запроса
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Request-ID $request_id;
+    # и для саброзапроса auth_request на auth-url, чтобы auth-service залогировал
+    # проверку токена под тем же ID, что и сам запрос на backend
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Request-ID $request_id;
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          {{- range $key, $svc := .Values.services }}
+          {{- range $path := $svc.protectedPaths }}
+          - path: {{ $path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "kolesa.appName" (dict "root" $ "key" $key) }}
+                port:
+                  number: 80
+          {{- end }}
+          {{- end }}
+{{- end }}
+{{- end }}

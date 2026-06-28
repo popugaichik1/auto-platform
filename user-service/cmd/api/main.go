@@ -80,7 +80,7 @@ func main() {
 		}
 	}()
 
-	router := HTTPHandler.InitRoutes()
+	router := HTTPHandler.InitRoutes(logger)
 
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),

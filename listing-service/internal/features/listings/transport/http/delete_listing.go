@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	core_errors "listing-service/internal/core/errors"
+	core_logger "listing-service/internal/core/logger"
 	"go.uber.org/zap"
 )
 
@@ -20,8 +21,10 @@ import (
 //	@Failure	401	{object}	map[string]string
 //	@Failure	403	{object}	map[string]string
 //	@Failure	404	{object}	map[string]string
-//	@Router		/{id} [delete]
+//	@Router		/mine/{id} [delete]
 func (h *ListingsHandler) DeleteListing(c *gin.Context) {
+	log := core_logger.FromContext(c.Request.Context())
+	
 	userID, ok := c.MustGet("user_id").(uuid.UUID)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -43,7 +46,7 @@ func (h *ListingsHandler) DeleteListing(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
 		}
-		h.log.Error("delete listing error", zap.Error(err))
+		log.Error("delete listing error:", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}

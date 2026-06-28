@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	core_domain "listing-service/internal/core/domain"
 	core_errors "listing-service/internal/core/errors"
+	core_logger "listing-service/internal/core/logger"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +25,7 @@ import (
 //	@Failure		401		{object}	map[string]string
 //	@Failure		403		{object}	map[string]string
 //	@Failure		404		{object}	map[string]string
-//	@Router			/{id} [patch]
+//	@Router			/mine/{id} [patch]
 func (h *ListingsHandler) UpdateListing(c *gin.Context) {
 	userID, ok := c.MustGet("user_id").(uuid.UUID)
 	if !ok {
@@ -81,7 +82,7 @@ func (h *ListingsHandler) UpdateListing(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
 		}
-		h.log.Error("update listing error", zap.Error(err))
+		core_logger.FromContext(c.Request.Context()).Error("update listing error", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
