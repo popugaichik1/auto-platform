@@ -164,7 +164,7 @@ jobs:
   messenger-service:
     name: messenger-service
     needs: detect-changes
-    if: needs.detect-changes.outputs.listing == 'true'
+    if: needs.detect-changes.outputs.messenger == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
