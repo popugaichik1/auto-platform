@@ -25,6 +25,7 @@ type listingRow struct {
 	EngineVolume float64
 	City         string
 	Region       string
+	PhotoURLs    []string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -48,6 +49,7 @@ func (r listingRow) toDomain() core_domain.Listing {
 		EngineVolume: r.EngineVolume,
 		City:         r.City,
 		Region:       r.Region,
+		PhotoURLs:    r.PhotoURLs,
 		CreatedAt:    r.CreatedAt,
 		UpdatedAt:    r.UpdatedAt,
 	}

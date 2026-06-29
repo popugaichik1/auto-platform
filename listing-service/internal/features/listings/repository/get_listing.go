@@ -18,7 +18,7 @@ func (r *Repository) GetListingByID(ctx context.Context, id uuid.UUID) (core_dom
 	const query = `
 		SELECT id, user_id, title, description, price, status,
 			make, model, year, mileage, color, body_type, fuel_type, transmission, engine_volume,
-			city, region, created_at, updated_at
+			city, region, photo_urls, created_at, updated_at
 		FROM listingservice.listings
 		WHERE id = $1
 	`
@@ -28,7 +28,7 @@ func (r *Repository) GetListingByID(ctx context.Context, id uuid.UUID) (core_dom
 		&row.ID, &row.UserID, &row.Title, &row.Description, &row.Price, &row.Status,
 		&row.Make, &row.Model, &row.Year, &row.Mileage, &row.Color, &row.BodyType,
 		&row.FuelType, &row.Transmission, &row.EngineVolume,
-		&row.City, &row.Region, &row.CreatedAt, &row.UpdatedAt,
+		&row.City, &row.Region, &row.PhotoURLs, &row.CreatedAt, &row.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {

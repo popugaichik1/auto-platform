@@ -21,6 +21,7 @@ func validListingArgs() (
 	transmission TransmissionType,
 	engineVolume float64,
 	city, region string,
+	photoURLs []string,
 ) {
 	return uuid.New(),
 		"Toyota Camry 2018",
@@ -36,7 +37,8 @@ func validListingArgs() (
 		TransmissionAutomatic,
 		2.5,
 		"Almaty",
-		"Almaty Region"
+		"Almaty Region",
+		nil
 }
 
 func TestListing_Validate(t *testing.T) {
@@ -100,6 +102,16 @@ func TestListing_Validate(t *testing.T) {
 			mutate:  func(l *Listing) { l.City = strings.Repeat("a", 101) },
 			wantErr: true,
 		},
+		{
+			name:    "too many photos",
+			mutate:  func(l *Listing) { l.PhotoURLs = make([]string, maxPhotosPerListing+1) },
+			wantErr: true,
+		},
+		{
+			name:    "max photos exactly is ok",
+			mutate:  func(l *Listing) { l.PhotoURLs = make([]string, maxPhotosPerListing) },
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -131,5 +143,18 @@ func TestNewListing_DefaultsStatusToActive(t *testing.T) {
 
 	if listing.Status != ListingStatusActive {
 		t.Fatalf("expected default status %q, got %q", ListingStatusActive, listing.Status)
+	}
+}
+
+// nil photoURLs должен стать пустым (не nil) слайсом — иначе pgx закодирует
+// его как SQL NULL при записи в NOT NULL колонку (см. repository/create_listing.go).
+func TestNewListing_NilPhotoURLsBecomesEmptySlice(t *testing.T) {
+	listing := NewListing(validListingArgs())
+
+	if listing.PhotoURLs == nil {
+		t.Fatalf("expected non-nil empty slice, got nil")
+	}
+	if len(listing.PhotoURLs) != 0 {
+		t.Fatalf("expected empty slice, got %v", listing.PhotoURLs)
 	}
 }

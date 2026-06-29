@@ -71,6 +71,9 @@ func (h *ListingsHandler) UpdateListing(c *gin.Context) {
 	if req.Region != nil {
 		update.Region = core_domain.Nullable[string]{Value: req.Region, Set: true}
 	}
+	if req.PhotoURLs != nil {
+		update.PhotoURLs = core_domain.Nullable[[]string]{Value: req.PhotoURLs, Set: true}
+	}
 
 	listing, err := h.service.UpdateListing(c.Request.Context(), id, userID, update)
 	if err != nil {

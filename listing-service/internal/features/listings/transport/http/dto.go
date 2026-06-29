@@ -22,6 +22,7 @@ type CreateListingRequest struct {
 	EngineVolume float64                  `json:"engine_volume" binding:"min=0"`
 	City         string                   `json:"city"          binding:"required"`
 	Region       string                   `json:"region"        binding:"required"`
+	PhotoURLs    []string                 `json:"photo_urls"    binding:"max=20"`
 }
 
 type UpdateListingRequest struct {
@@ -33,6 +34,7 @@ type UpdateListingRequest struct {
 	Color       *string                        `json:"color"`
 	City        *string                        `json:"city"`
 	Region      *string                        `json:"region"`
+	PhotoURLs   *[]string                      `json:"photo_urls"`
 }
 
 type ListingResponse struct {
@@ -53,6 +55,7 @@ type ListingResponse struct {
 	EngineVolume float64                      `json:"engine_volume"`
 	City         string                       `json:"city"`
 	Region       string                       `json:"region"`
+	PhotoURLs    []string                     `json:"photo_urls"`
 	CreatedAt    time.Time                    `json:"created_at"`
 	UpdatedAt    time.Time                    `json:"updated_at"`
 }
@@ -81,6 +84,7 @@ func toListingResponse(l core_domain.Listing) ListingResponse {
 		EngineVolume: l.EngineVolume,
 		City:         l.City,
 		Region:       l.Region,
+		PhotoURLs:    l.PhotoURLs,
 		CreatedAt:    l.CreatedAt,
 		UpdatedAt:    l.UpdatedAt,
 	}

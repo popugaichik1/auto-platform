@@ -13,6 +13,8 @@ type BodyType string
 type FuelType string
 type TransmissionType string
 
+const maxPhotosPerListing = 20
+
 const (
 	ListingStatusActive   ListingStatus = "active"
 	ListingStatusInactive ListingStatus = "inactive"
@@ -59,6 +61,8 @@ type Listing struct {
 	City   string
 	Region string
 
+	PhotoURLs []string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -72,6 +76,7 @@ type ListingUpdate struct {
 	Color        Nullable[string]
 	City         Nullable[string]
 	Region       Nullable[string]
+	PhotoURLs    Nullable[[]string]
 }
 
 type ListingFilter struct {
@@ -109,7 +114,14 @@ func NewListing(
 	engineVolume float64,
 	city string,
 	region string,
+	photoURLs []string,
 ) Listing {
+	if photoURLs == nil {
+		// photo_urls в БД NOT NULL DEFAULT '{}' — pgx кодирует nil-slice как
+		// SQL NULL, а не как пустой массив, так что это нарушило бы constraint
+		photoURLs = []string{}
+	}
+
 	return Listing{
 		ID:           uuid.New(),
 		UserID:       userID,
@@ -128,6 +140,7 @@ func NewListing(
 		EngineVolume: engineVolume,
 		City:         city,
 		Region:       region,
+		PhotoURLs:    photoURLs,
 	}
 }
 
@@ -156,6 +169,13 @@ func (l Listing) Validate() error {
 	cityLen := len([]rune(l.City))
 	if cityLen < 1 || cityLen > 100 {
 		return fmt.Errorf("invalid `city` len: %d: %w", cityLen, core_errors.ErrInvalidArgument)
+	}
+
+	if len(l.PhotoURLs) > maxPhotosPerListing {
+		return fmt.Errorf(
+			"too many photos: %d (max %d): %w",
+			len(l.PhotoURLs), maxPhotosPerListing, core_errors.ErrInvalidArgument,
+		)
 	}
 
 	return nil

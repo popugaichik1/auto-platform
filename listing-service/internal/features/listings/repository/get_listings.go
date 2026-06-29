@@ -85,7 +85,7 @@ func (r *Repository) GetListings(ctx context.Context, filter core_domain.Listing
 	query := fmt.Sprintf(`
 		SELECT id, user_id, title, description, price, status,
 			make, model, year, mileage, color, body_type, fuel_type, transmission, engine_volume,
-			city, region, created_at, updated_at
+			city, region, photo_urls, created_at, updated_at
 		FROM listingservice.listings
 		%s
 		ORDER BY created_at DESC
@@ -105,7 +105,7 @@ func (r *Repository) GetListings(ctx context.Context, filter core_domain.Listing
 			&row.ID, &row.UserID, &row.Title, &row.Description, &row.Price, &row.Status,
 			&row.Make, &row.Model, &row.Year, &row.Mileage, &row.Color, &row.BodyType,
 			&row.FuelType, &row.Transmission, &row.EngineVolume,
-			&row.City, &row.Region, &row.CreatedAt, &row.UpdatedAt,
+			&row.City, &row.Region, &row.PhotoURLs, &row.CreatedAt, &row.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan listing row: %w", err)
 		}
