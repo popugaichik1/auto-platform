@@ -1,5 +1,6 @@
 {{- range $key, $svc := .Values.services }}
 {{- if $svc.postgres.enabled }}
+{{- if not $.Values.global.secretsManagedExternally }}
 ---
 apiVersion: v1
 kind: Secret
@@ -10,6 +11,7 @@ metadata:
 type: Opaque
 stringData:
   password: {{ $svc.postgres.password | quote }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
