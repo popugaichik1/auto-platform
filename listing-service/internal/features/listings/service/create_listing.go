@@ -27,6 +27,7 @@ func (s *Service) CreateListing(
 	engineVolume float64,
 	city string,
 	region string,
+	photoURLs []string,
 ) (core_domain.Listing, error) {
 	op := "ListingsService.CreateListing"
 
@@ -34,7 +35,7 @@ func (s *Service) CreateListing(
 		userID, title, description, price,
 		make_, model, year, mileage, color,
 		bodyType, fuelType, transmission, engineVolume,
-		city, region,
+		city, region, photoURLs,
 	)
 
 	if err := listing.Validate(); err != nil {

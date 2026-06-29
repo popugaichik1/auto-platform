@@ -17,15 +17,15 @@ func (r *Repository) CreateListing(ctx context.Context, listing core_domain.List
 		INSERT INTO listingservice.listings (
 			id, user_id, title, description, price, status,
 			make, model, year, mileage, color, body_type, fuel_type, transmission, engine_volume,
-			city, region
+			city, region, photo_urls
 		) VALUES (
 			$1, $2, $3, $4, $5, $6,
 			$7, $8, $9, $10, $11, $12, $13, $14, $15,
-			$16, $17
+			$16, $17, $18
 		)
 		RETURNING id, user_id, title, description, price, status,
 			make, model, year, mileage, color, body_type, fuel_type, transmission, engine_volume,
-			city, region, created_at, updated_at
+			city, region, photo_urls, created_at, updated_at
 	`
 
 	var row listingRow
@@ -47,11 +47,12 @@ func (r *Repository) CreateListing(ctx context.Context, listing core_domain.List
 		listing.EngineVolume,
 		listing.City,
 		listing.Region,
+		listing.PhotoURLs,
 	).Scan(
 		&row.ID, &row.UserID, &row.Title, &row.Description, &row.Price, &row.Status,
 		&row.Make, &row.Model, &row.Year, &row.Mileage, &row.Color, &row.BodyType,
 		&row.FuelType, &row.Transmission, &row.EngineVolume,
-		&row.City, &row.Region, &row.CreatedAt, &row.UpdatedAt,
+		&row.City, &row.Region, &row.PhotoURLs, &row.CreatedAt, &row.UpdatedAt,
 	)
 	if err != nil {
 		return core_domain.Listing{}, fmt.Errorf("create listing: %w", mapRepoError(err))

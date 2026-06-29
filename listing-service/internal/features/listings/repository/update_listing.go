@@ -50,6 +50,13 @@ func (r *Repository) UpdateListing(ctx context.Context, id uuid.UUID, update cor
 	if update.Region.Set {
 		addSet("region", update.Region.Value)
 	}
+	if update.PhotoURLs.Set {
+		photoURLs := update.PhotoURLs.Value
+		if photoURLs == nil {
+			photoURLs = &[]string{}
+		}
+		addSet("photo_urls", *photoURLs)
+	}
 
 	if len(setClauses) == 0 {
 		return r.GetListingByID(ctx, id)
@@ -64,7 +71,7 @@ func (r *Repository) UpdateListing(ctx context.Context, id uuid.UUID, update cor
 		WHERE id = $%d
 		RETURNING id, user_id, title, description, price, status,
 			make, model, year, mileage, color, body_type, fuel_type, transmission, engine_volume,
-			city, region, created_at, updated_at
+			city, region, photo_urls, created_at, updated_at
 	`, strings.Join(setClauses, ", "), argIdx)
 
 	var row listingRow
@@ -72,7 +79,7 @@ func (r *Repository) UpdateListing(ctx context.Context, id uuid.UUID, update cor
 		&row.ID, &row.UserID, &row.Title, &row.Description, &row.Price, &row.Status,
 		&row.Make, &row.Model, &row.Year, &row.Mileage, &row.Color, &row.BodyType,
 		&row.FuelType, &row.Transmission, &row.EngineVolume,
-		&row.City, &row.Region, &row.CreatedAt, &row.UpdatedAt,
+		&row.City, &row.Region, &row.PhotoURLs, &row.CreatedAt, &row.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {

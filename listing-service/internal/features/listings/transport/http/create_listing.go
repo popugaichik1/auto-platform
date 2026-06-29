@@ -53,6 +53,7 @@ func (h *ListingsHandler) CreateListing(c *gin.Context) {
 		req.EngineVolume,
 		req.City,
 		req.Region,
+		req.PhotoURLs,
 	)
 	if err != nil {
 		log.Error("create listing error", zap.Error(err))

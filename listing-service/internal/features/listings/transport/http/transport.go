@@ -23,7 +23,7 @@ type Service interface {
 		make_, model string, year, mileage int, color string,
 		bodyType core_domain.BodyType, fuelType core_domain.FuelType,
 		transmission core_domain.TransmissionType, engineVolume float64,
-		city, region string) (core_domain.Listing, error)
+		city, region string, photoURLs []string) (core_domain.Listing, error)
 
 	GetListingByID(ctx context.Context, id uuid.UUID) (core_domain.Listing, error)
 	GetListings(ctx context.Context, filter core_domain.ListingFilter) ([]core_domain.Listing, error)
