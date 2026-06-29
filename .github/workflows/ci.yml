@@ -230,7 +230,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      #tsc -b (тайпчек) + vite build
+      #tsc -b (тайпчек) + vite build.
       - name: Build
         run: npm run build
 
