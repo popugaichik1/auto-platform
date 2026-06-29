@@ -12,6 +12,11 @@ global:
   # один образ для всех трёх Postgres-инстансов — в docker-compose у каждого
   # сервиса свой контейнер, но версия везде одна и та же
   postgresImage: "postgres:18.1-bookworm"
+  # false — Secret-объекты (JWT_SECRET, пароли Postgres, S3-ключи) создаёт
+  # сам чарт из значений выше/secretEnv. true (см. values-production.yaml) —
+  # чарт эти Secret'ы вообще не создаёт, ожидает, что их положит туда
+  # Sealed Secrets controller (см. templates/sealed-secrets.yaml)
+  secretsManagedExternally: false
 
 ingress:
   enabled: true
@@ -57,12 +62,12 @@ services:
       POSTGRES_PORT: "5432"
       POSTGRES_TIMEOUT: "5s"
     secretEnv:
-      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
+      JWT_SECRET: "CHANGE_ME"
     postgres:
       enabled: true
       database: auth_db
       username: auth_user
-      password: "auth-db-pass"
+      password: "CHANGE_ME"
       storageSize: 1Gi
       resources:
         requests: { cpu: 100m, memory: 128Mi }
@@ -88,8 +93,6 @@ services:
       TIME_ZONE: "UTC"
       POSTGRES_PORT: "5432"
       POSTGRES_TIMEOUT: "10s"
-    secretEnv:
-      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
     redis:
       enabled: true
       port: "6379"
@@ -98,7 +101,7 @@ services:
       enabled: true
       database: listing_db
       username: listing_user
-      password: "listing-db-pass"
+      password: "CHANGE_ME"
       storageSize: 1Gi
       resources:
         requests: { cpu: 100m, memory: 128Mi }
@@ -125,13 +128,11 @@ services:
       TIME_ZONE: "UTC"
       POSTGRES_PORT: "5432"
       POSTGRES_TIMEOUT: "10s"
-    secretEnv:
-      JWT_SECRET: "CHH66DtoAOOcSmKkhPujvq2GNJlMtOjnIqchiHv9yyI="
     postgres:
       enabled: true
       database: user_db
       username: user_user
-      password: "user-db-pass"
+      password: "CHANGE_ME"
       storageSize: 1Gi
       resources:
         requests: { cpu: 100m, memory: 128Mi }
@@ -166,7 +167,7 @@ services:
       enabled: true
       database: messenger_db
       username: messenger_user
-      password: "messenger-db-pass"
+      password: "CHANGE_ME"
       storageSize: 1Gi
       resources:
         requests: { cpu: 100m, memory: 128Mi }
@@ -195,9 +196,9 @@ services:
       # чартом (как и global.kafkaBrokers). Подставьте реальные значения
       # после создания bucket'а в панели Timeweb (Cloud Storage > S3) —
       # endpoint и регион там же, ключи доступа генерируются при создании.
-      S3_ENDPOINT: "https://CHANGE_ME.s3.twcstorage.ru"
+      S3_ENDPOINT: "https://s3.twcstorage.ru"
       S3_REGION: "ru-1"
-      S3_BUCKET: "kolesa-listing-photos"
+      S3_BUCKET: "1568a230-09f2-461f-8c8a-61e3de05bc1e"
     secretEnv:
       S3_ACCESS_KEY: "CHANGE_ME"
       S3_SECRET_KEY: "CHANGE_ME"

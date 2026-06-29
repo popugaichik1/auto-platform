@@ -1,0 +1,35 @@
+# Применяется один раз вручную в кластер, где уже установлен ArgoCD:
+#   kubectl apply -f argocd/application.yaml
+#
+# Дальше ничего применять руками не нужно — ArgoCD сам следит за main и
+# синхронизирует кластер с тем, что лежит в helm/auto-platform. CI
+# (см. .github/workflows/ci.yml, джоба deploy) после успешной сборки
+# образа коммитит новый tag в values-production.yaml — этот коммит и есть
+# тот самый "deploy" в GitOps-модели, не прямой helm upgrade.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: auto-platform
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/popugaichik1/auto-platform.git
+    targetRevision: main
+    path: helm/auto-platform
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: auto-platform
+
+  syncPolicy:
+    automated:
+      prune: true     # удалять ресурсы, убранные из чарта
+      selfHeal: true   # откатывать ручные изменения в кластере обратно к git
+    syncOptions:
+      - CreateNamespace=true
