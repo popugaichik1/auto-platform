@@ -16,6 +16,8 @@ jobs:
       auth: ${{ steps.filter.outputs.auth }}
       listing: ${{ steps.filter.outputs.listing }}
       user: ${{ steps.filter.outputs.user }}
+      messenger: ${{ steps.filter.outputs.messenger }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,8 +33,10 @@ jobs:
               - 'listing-service/**'
             user:
               - 'user-service/**'
-            messsenger:
+            messenger:
               - 'messenger-service/**'
+            frontend:
+              - 'frontend/**'
   # ─────────────────────────────────────────
   # AUTH SERVICE
   # ─────────────────────────────────────────
@@ -197,3 +201,38 @@ jobs:
 
       - name: Docker build
         run: docker build -f cmd/Dockerfile .
+# ─────────────────────────────────────────
+# FRONTEND
+# ─────────────────────────────────────────
+  frontend:
+    name: frontend
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      #tsc -b (тайпчек) + vite build
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Docker build
+        run: docker build -f Dockerfile .
