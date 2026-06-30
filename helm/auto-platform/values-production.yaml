@@ -10,14 +10,12 @@
 # IP ingress-nginx в кластере Timeweb
 ingress:
   host: "auto-platform.kuber-cluster.website"
-
 # Пакеты в GHCR приватные по умолчанию — пуллить их из кластера нужно по
 # секрету. Сам секрет нужно создать в кластере руками (см. инструкцию),
 # здесь только подключаем его по имени.
 global:
   imagePullSecrets:
     - name: ghcr-pull-secret
-  
   kafka:
     sasl:
       enable: true
@@ -26,35 +24,31 @@ global:
   # controller из templates/sealed-secrets.yaml — сам чарт их не создаёт
   # из CHANGE_ME-значений в values.yaml.
   secretsManagedExternally: true
-
 # Теги образов — CI обновляет их автоматически после каждого успешного
 # билда конкретного сервиса (см. .github/workflows/ci.yml, джоба deploy).
 # Начальное значение здесь не важно, оно будет перезаписано первым деплоем.
 services:
   auth:
     image:
-      tag: "latest"
+      tag: "de172041cc26d5b0a8a09794123dcafedff7c0e2"
     postgres:
       external: true
       host: "186.246.8.193"
       sslMode: "require"
-  
   listing:
     image:
-      tag: "latest"
+      tag: "de172041cc26d5b0a8a09794123dcafedff7c0e2"
     postgres:
       external: true
       host: "186.246.8.193"
       sslMode: "require"
-
   user:
     image:
-      tag: "latest"
+      tag: "de172041cc26d5b0a8a09794123dcafedff7c0e2"
     postgres:
       external: true
       host: "186.246.8.193"
       sslMode: "require"
-
   messenger:
     image:
       tag: "latest"
@@ -62,11 +56,9 @@ services:
       external: true
       host: "186.246.8.193"
       sslMode: "require"
-      
   storage:
     image:
-      tag: "latest"
-
+      tag: "de172041cc26d5b0a8a09794123dcafedff7c0e2"
 frontend:
   image:
     tag: "latest"
