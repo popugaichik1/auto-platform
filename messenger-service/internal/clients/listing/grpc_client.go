@@ -18,7 +18,6 @@ import (
 // но ходит в listing-service по gRPC вместо HTTP.
 type GRPCClient struct {
 	stub listingpb.ListingServiceClient
-	conf  *GRPCClientConfig
 }
 
 func NewGRPCClient(stub listingpb.ListingServiceClient) *GRPCClient {

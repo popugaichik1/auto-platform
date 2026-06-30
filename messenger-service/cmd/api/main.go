@@ -81,7 +81,11 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to connect to listing-service gRPC", zap.Error(err))
 	}
-	defer grpcConn.Close()
+	defer func() {
+		if err := grpcConn.Close(); err != nil {
+			logger.Error("grpc conn close error", zap.Error(err))
+		}
+	}()
 	listingClient := listing_client.NewGRPCClient(listingpb.NewListingServiceClient(grpcConn))
 
 	// Init Kafka producer (публикация message.sent для фан-аута между репликами)

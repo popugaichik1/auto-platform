@@ -52,16 +52,11 @@ func (s *Service) SendMessage(
 		CreatedAt:      saved.CreatedAt,
 	}
 
-	if err := s.publisher.Publish(ctx, core_kafka.NewMessage(
+	_ = s.publisher.Publish(ctx, core_kafka.NewMessage(
 		core_kafka.TopicMessageSent,
 		saved.ID.String(),
 		event,
-	)); err != nil {
-		// Сообщение уже сохранено в Postgres — потеря этого события означает
-		// только то, что получатель не увидит его мгновенно, если он сейчас
-		// на другой реплике; он всё равно увидит его при следующем REST-запросе
-		// истории. Поэтому не считаем это ошибкой отправки сообщения.
-	}
+	))
 
 	return saved, nil
 }
