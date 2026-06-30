@@ -2,6 +2,7 @@ package core_pgx_pool
 
 import (
 	"context"
+	"net/url"
 	"fmt"
 	"time"
 	core_postgres_pool "user-service/internal/core/repository/postgres/pool"
@@ -27,15 +28,14 @@ func NewPool(
 	ctx context.Context,
 	config Config,
 ) (*Pool, error) {
-	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		config.User,
-		config.Password,
-		config.Host,
-		config.Port,
-		config.Database,
-		config.SSLMode,
-	)
+	u := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(config.User, config.Password),
+		Host:     config.Host + ":" + config.Port,
+		Path:     config.Database,
+		RawQuery: "sslmode=" + config.SSLMode,
+	}
+	connectionString := u.String()
 
 	pgxconfig, err := pgxpool.ParseConfig(connectionString)
 	if err != nil {
