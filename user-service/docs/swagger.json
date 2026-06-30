@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Сервис профилей пользователей kolesa.",
+        "description": "Сервис профилей пользователей auto-platform.",
         "title": "User Service API",
         "contact": {},
         "version": "1.0"

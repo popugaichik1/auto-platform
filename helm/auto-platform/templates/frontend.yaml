@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: frontend
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
@@ -18,7 +18,7 @@ spec:
       labels:
         app.kubernetes.io/name: frontend
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/part-of: kolesa-platform
+        app.kubernetes.io/part-of: auto-platform
     spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -26,7 +26,7 @@ spec:
       {{- end }}
       containers:
         - name: frontend
-          image: {{ include "kolesa.image" (dict "root" $ "svc" .Values.frontend) }}
+          image: {{ include "auto-platform.image" (dict "root" $ "svc" .Values.frontend) }}
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: 80
@@ -52,7 +52,7 @@ metadata:
   labels:
     app.kubernetes.io/name: frontend
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
 spec:
   selector:
     app.kubernetes.io/name: frontend

@@ -23,9 +23,9 @@ type Consumer struct {
 }
 
 
-func NewConsumer(cfg core_kafka.ConsumerCfg, service Service, topic string, log *core_logger.Logger, dlqProducer *Producer) (*Consumer, error) {
+func NewConsumer(config core_kafka.ConsumerCfg, service Service, topic string, log *core_logger.Logger, dlqProducer *Producer) (*Consumer, error) {
 	conf := kafka.ConfigMap{
-		"bootstrap.servers":          cfg.BrokersString(),
+		"bootstrap.servers":          config.BrokersString(),
 		"group.id":                   core_kafka.RegisterUserConsumerGroup,
 		"auto.offset.reset":          "earliest",
 		"enable.auto.offset.store":   false,
@@ -36,6 +36,12 @@ func NewConsumer(cfg core_kafka.ConsumerCfg, service Service, topic string, log 
 		"session.timeout.ms": 6000,
 	}
 
+	if config.SASLEnable {
+    	conf["security.protocol"] = "SASL_SSL"
+    	conf["sasl.mechanisms"]   = config.SASLMechanism
+    	conf["sasl.username"]     = config.SASLUsername
+    	conf["sasl.password"]     = config.SASLPassword
+	}
 	consumer, err := kafka.NewConsumer(&conf)
 
 	if err != nil {

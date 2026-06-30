@@ -9,9 +9,12 @@ import (
 
 
 type ProducerConfig struct {
-	Brokers []string  `envconfig:"BROKERS" required:"true"`
+    Brokers       []string `envconfig:"BROKERS"        required:"true"`
+    SASLEnable    bool     `envconfig:"SASL_ENABLE"    default:"false"`
+    SASLMechanism string   `envconfig:"SASL_MECHANISM" default:"SCRAM-SHA-512"`
+    SASLUsername  string   `envconfig:"SASL_USERNAME"`
+    SASLPassword  string   `envconfig:"SASL_PASSWORD"`
 }
-
 
 func NewProducerConfig() (ProducerConfig, error) {
 	var config ProducerConfig

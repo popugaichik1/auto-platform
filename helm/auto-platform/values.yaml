@@ -9,6 +9,10 @@ global:
   # это нужно будет добавить отдельно в core_kafka.ProducerConfig/ConsumerConfig
   # сервисов (сейчас там только bootstrap.servers, без аутентификации).
   kafkaBrokers: "host:9092"
+  kafka:
+    sasl:
+      enable: false
+      mechanism: "SCRAM-SHA-512"
   # один образ для всех трёх Postgres-инстансов — в docker-compose у каждого
   # сервиса свой контейнер, но версия везде одна и та же
   postgresImage: "postgres:18.1-bookworm"
@@ -21,7 +25,7 @@ global:
 ingress:
   enabled: true
   className: "nginx"
-  host: "kolesa.example.com"
+  host: "auto-platform.example.com"
   tls:
     enabled: false
     secretName: ""
@@ -65,13 +69,11 @@ services:
       JWT_SECRET: "CHANGE_ME"
     postgres:
       enabled: true
+      external: false     
+      host: ""            
+      sslMode: "disable"   
       database: auth_db
       username: auth_user
-      password: "CHANGE_ME"
-      storageSize: 1Gi
-      resources:
-        requests: { cpu: 100m, memory: 128Mi }
-        limits: { cpu: 500m, memory: 512Mi }
 
   listing:
     image:
@@ -100,13 +102,11 @@ services:
       timeout: "2s"
     postgres:
       enabled: true
+      external: false     
+      host: ""            
+      sslMode: "disable"   
       database: listing_db
       username: listing_user
-      password: "CHANGE_ME"
-      storageSize: 1Gi
-      resources:
-        requests: { cpu: 100m, memory: 128Mi }
-        limits: { cpu: 500m, memory: 512Mi }
 
   user:
     image:
@@ -131,13 +131,11 @@ services:
       POSTGRES_TIMEOUT: "10s"
     postgres:
       enabled: true
+      external: false     
+      host: ""            
+      sslMode: "disable"   
       database: user_db
       username: user_user
-      password: "CHANGE_ME"
-      storageSize: 1Gi
-      resources:
-        requests: { cpu: 100m, memory: 128Mi }
-        limits: { cpu: 500m, memory: 512Mi }
 
   messenger:
     image:
@@ -166,13 +164,11 @@ services:
     callsListingService: true
     postgres:
       enabled: true
+      external: false     
+      host: ""            
+      sslMode: "disable"   
       database: messenger_db
       username: messenger_user
-      password: "CHANGE_ME"
-      storageSize: 1Gi
-      resources:
-        requests: { cpu: 100m, memory: 128Mi }
-        limits: { cpu: 500m, memory: 512Mi }
 
   storage:
     image:

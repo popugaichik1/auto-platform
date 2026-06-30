@@ -12,7 +12,8 @@ type Config struct {
 	Port     string        `envconfig:"PORT"     default:"5432"`
 	User     string        `envconfig:"USER"     required:"true"`
 	Password string        `envconfig:"PASSWORD" required:"true"`
-	Database string        `envconfig:"DB"       required:"true"`
+	Database string 	   `envconfig:"DB"       required:"true"`
+	SSLMode  string        `envconfig:"SSL_MODE" default:"disable"`
 	Timeout  time.Duration `envconfig:"TIMEOUT"  required:"true"`
 }
 

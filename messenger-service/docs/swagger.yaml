@@ -40,7 +40,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: Сервис переписки покупателей и продавцов kolesa.
+  description: Сервис переписки покупателей и продавцов auto-platform.
   title: Messenger Service API
   version: "1.0"
 paths:

@@ -112,7 +112,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/user",
 	Schemes:          []string{},
 	Title:            "User Service API",
-	Description:      "Сервис профилей пользователей kolesa.",
+	Description:      "Сервис профилей пользователей auto-platform.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -2,3 +2,6 @@ app.yaml
 
 # реальные секреты — только локально, см. values-secrets.example.yaml
 values-secrets.yaml
+kubeseal
+kubeseal-*.tar.gz
+sealed-secrets-cert.pem

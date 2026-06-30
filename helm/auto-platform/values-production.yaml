@@ -1,6 +1,6 @@
 # Оверрай для реального кластера в Timeweb Cloud. Накладывается поверх
 # values.yaml (который уже содержит дефолты, рассчитанные на прод —
-# imageRegistry: ghcr.io/popugaichik1, host: kolesa.example.com):
+# imageRegistry: ghcr.io/popugaichik1, host: auto-platform.example.com):
 #
 # Управляется ArgoCD (Application смотрит на этот файл) — после установки
 # вручную (см. инструкцию) дальнейшие helm upgrade делать не нужно, ArgoCD
@@ -9,7 +9,7 @@
 # CHANGE_ME: ваш реальный домен, на который смотрит DNS A-запись на внешний
 # IP ingress-nginx в кластере Timeweb
 ingress:
-  host: "CHANGE_ME.example.com"
+  host: "auto-platform.kuber-cluster.website"
 
 # Пакеты в GHCR приватные по умолчанию — пуллить их из кластера нужно по
 # секрету. Сам секрет нужно создать в кластере руками (см. инструкцию),
@@ -17,6 +17,11 @@ ingress:
 global:
   imagePullSecrets:
     - name: ghcr-pull-secret
+  
+  kafka:
+    sasl:
+      enable: true
+      mechanism: "SCRAM-SHA-512"
   # Secret'ы (JWT_SECRET, пароли Postgres, S3-ключи) кладёт Sealed Secrets
   # controller из templates/sealed-secrets.yaml — сам чарт их не создаёт
   # из CHANGE_ME-значений в values.yaml.
@@ -29,15 +34,35 @@ services:
   auth:
     image:
       tag: "latest"
+    postgres:
+      external: true
+      host: "186.246.8.193"
+      sslMode: "require"
+  
   listing:
     image:
       tag: "latest"
+    postgres:
+      external: true
+      host: "186.246.8.193"
+      sslMode: "require"
+
   user:
     image:
       tag: "latest"
+    postgres:
+      external: true
+      host: "186.246.8.193"
+      sslMode: "require"
+
   messenger:
     image:
       tag: "latest"
+    postgres:
+      external: true
+      host: "186.246.8.193"
+      sslMode: "require"
+      
   storage:
     image:
       tag: "latest"

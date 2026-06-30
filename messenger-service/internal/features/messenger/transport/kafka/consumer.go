@@ -34,9 +34,9 @@ type Consumer struct {
 // делит их между собой. auto.offset.reset=latest, потому что свежезапущенной
 // реплике не нужна историческая очередь — старые сообщения уже в Postgres
 // и будут получены через REST-историю, а не через фан-аут.
-func NewConsumer(cfg core_kafka.ConsumerCfg, hub Hub, topic string, log *core_logger.Logger) (*Consumer, error) {
+func NewConsumer(config core_kafka.ConsumerCfg, hub Hub, topic string, log *core_logger.Logger) (*Consumer, error) {
 	conf := kafka.ConfigMap{
-		"bootstrap.servers":        cfg.BrokersString(),
+		"bootstrap.servers":        config.BrokersString(),
 		"group.id":                 "messenger.fanout." + uuid.New().String(),
 		"auto.offset.reset":        "latest",
 		"enable.auto.offset.store": false,
@@ -44,7 +44,12 @@ func NewConsumer(cfg core_kafka.ConsumerCfg, hub Hub, topic string, log *core_lo
 		"auto.commit.interval.ms":  5000,
 		"session.timeout.ms":       6000,
 	}
-
+	if config.SASLEnable {
+    	conf["security.protocol"] = "SASL_SSL"
+    	conf["sasl.mechanisms"]   = config.SASLMechanism
+    	conf["sasl.username"]     = config.SASLUsername
+    	conf["sasl.password"]     = config.SASLPassword
+}
 	consumer, err := kafka.NewConsumer(&conf)
 	if err != nil {
 		return nil, err

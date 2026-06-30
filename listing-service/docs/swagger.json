@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Сервис объявлений о продаже автомобилей kolesa.",
+        "description": "Сервис объявлений о продаже автомобилей auto-platform.",
         "title": "Listing Service API",
         "contact": {},
         "version": "1.0"

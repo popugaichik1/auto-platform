@@ -1,5 +1,5 @@
 apiVersion: v2
-name: kolesa-platform
+name: auto-platform
 description: auth-service, listing-service, user-service + Postgres-per-service, Redis cache
 type: application
 version: 0.1.0

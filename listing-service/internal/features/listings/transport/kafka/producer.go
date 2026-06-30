@@ -14,15 +14,23 @@ type Producer struct {
 }
 
 func NewProducer(config core_kafka.ProducerConfig) (*Producer, error) {
-	p, err := kafka.NewProducer(&kafka.ConfigMap{
+	conf := kafka.ConfigMap{
 		"bootstrap.servers": config.BrokersString(),
 		"partitioner":       "random",
-	})
-	if err != nil {
-		return nil, fmt.Errorf("create kafka producer: %w", err)
 	}
-
-	return &Producer{producer: p}, nil
+	if config.SASLEnable {
+    	conf["security.protocol"] = "SASL_SSL"
+    	conf["sasl.mechanisms"]   = config.SASLMechanism
+    	conf["sasl.username"]     = config.SASLUsername
+    	conf["sasl.password"]     = config.SASLPassword
+	}
+	p, err := kafka.NewProducer(&conf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create producer: %w", err)
+	}
+	return &Producer{
+		producer: p,
+	}, nil
 }
 
 func (p *Producer) Publish(ctx context.Context, message core_kafka.Message) error {

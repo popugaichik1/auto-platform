@@ -3,11 +3,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "kolesa.redisName" (dict "root" $) }}
+  name: {{ include "auto-platform.redisName" (dict "root" $) }}
   labels:
     app.kubernetes.io/name: redis
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
 spec:
   replicas: 1
   selector:
@@ -19,7 +19,7 @@ spec:
       labels:
         app.kubernetes.io/name: redis
         app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/part-of: kolesa-platform
+        app.kubernetes.io/part-of: auto-platform
     spec:
       containers:
         - name: redis
@@ -42,11 +42,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "kolesa.redisName" (dict "root" $) }}
+  name: {{ include "auto-platform.redisName" (dict "root" $) }}
   labels:
     app.kubernetes.io/name: redis
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
 spec:
   selector:
     app.kubernetes.io/name: redis

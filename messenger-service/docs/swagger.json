@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Сервис переписки покупателей и продавцов kolesa.",
+        "description": "Сервис переписки покупателей и продавцов auto-platform.",
         "title": "Messenger Service API",
         "contact": {},
         "version": "1.0"

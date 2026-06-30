@@ -13,7 +13,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: Сервис профилей пользователей kolesa.
+  description: Сервис профилей пользователей auto-platform.
   title: User Service API
   version: "1.0"
 paths:

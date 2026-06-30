@@ -22,7 +22,7 @@ import (
 
 // @title			Auth Service API
 // @version		1.0
-// @description	Сервис аутентификации и регистрации пользователей kolesa.
+// @description	Сервис аутентификации и регистрации пользователей auto-platform.
 // @BasePath		/api/auth
 // @securityDefinitions.apikey	BearerAuth
 // @in							header

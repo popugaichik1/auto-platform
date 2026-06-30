@@ -16,6 +16,7 @@ type Config struct {
 	User     string `envconfig:"USER"     required:"true"`
 	Password string `envconfig:"PASSWORD" required:"true"`
 	Database string `envconfig:"DB"       required:"true"`
+	SSLMode  string `envconfig:"SSL_MODE" default:"disable"`
 
 	// Timeout — максимальное время выполнения одного запроса к базе данных.
 	// Используется репозиториями через Pool.OpTimeout() + context.WithTimeout.

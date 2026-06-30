@@ -5,20 +5,23 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "kolesa.postgresName" (dict "root" $ "key" $key) }}
+  name: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
   labels:
-    {{- include "kolesa.labels" (dict "root" $ "key" $key) | nindent 4 }}
+    {{- include "auto-platform.labels" (dict "root" $ "key" $key) | nindent 4 }}
 type: Opaque
 stringData:
   password: {{ $svc.postgres.password | quote }}
 {{- end }}
+
+#Если постгрес задэплоен на кластере то
+{{- if not $svc.postgres.external }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "kolesa.postgresName" (dict "root" $ "key" $key) }}
+  name: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
   labels:
-    {{- include "kolesa.labels" (dict "root" $ "key" $key) | nindent 4 }}
+    {{- include "auto-platform.labels" (dict "root" $ "key" $key) | nindent 4 }}
 spec:
   clusterIP: None
   selector:
@@ -31,11 +34,11 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "kolesa.postgresName" (dict "root" $ "key" $key) }}
+  name: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
   labels:
-    {{- include "kolesa.labels" (dict "root" $ "key" $key) | nindent 4 }}
+    {{- include "auto-platform.labels" (dict "root" $ "key" $key) | nindent 4 }}
 spec:
-  serviceName: {{ include "kolesa.postgresName" (dict "root" $ "key" $key) }}
+  serviceName: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
   replicas: 1
   selector:
     matchLabels:
@@ -46,7 +49,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $key }}-postgres
         app.kubernetes.io/instance: {{ $.Release.Name }}
-        app.kubernetes.io/part-of: kolesa-platform
+        app.kubernetes.io/part-of: auto-platform
     spec:
       containers:
         - name: postgres
@@ -61,7 +64,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "kolesa.postgresName" (dict "root" $ "key" $key) }}
+                  name: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
                   key: password
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
@@ -88,5 +91,6 @@ spec:
         resources:
           requests:
             storage: {{ $svc.postgres.storageSize }}
+{{- end }}
 {{- end }}
 {{- end }}

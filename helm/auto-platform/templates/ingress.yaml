@@ -7,7 +7,7 @@ metadata:
   name: {{ .Release.Name }}-ingress
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
   annotations:
     # nginx сам минтит ID на каждый запрос — единая точка трассировки для
     # всех сервисов, независимо от того, защищён путь или нет ($request_id
@@ -32,7 +32,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "kolesa.appName" (dict "root" $ "key" $key) }}
+                name: {{ include "auto-platform.appName" (dict "root" $ "key" $key) }}
                 port:
                   number: 80
           {{- end }}
@@ -65,9 +65,9 @@ metadata:
   name: {{ .Release.Name }}-ingress-protected
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/part-of: kolesa-platform
+    app.kubernetes.io/part-of: auto-platform
   annotations:
-    nginx.ingress.kubernetes.io/auth-url: "http://{{ include "kolesa.appName" (dict "root" $ "key" "auth") }}.{{ .Release.Namespace }}.svc.cluster.local/api/auth/validate"
+    nginx.ingress.kubernetes.io/auth-url: "http://{{ include "auto-platform.appName" (dict "root" $ "key" "auth") }}.{{ .Release.Namespace }}.svc.cluster.local/api/auth/validate"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id"
     # тот же $request_id, что и в публичном Ingress — для финального проксируемого запроса
     nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -101,7 +101,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "kolesa.appName" (dict "root" $ "key" $key) }}
+                name: {{ include "auto-platform.appName" (dict "root" $ "key" $key) }}
                 port:
                   number: 80
           {{- end }}

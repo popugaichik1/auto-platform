@@ -27,7 +27,7 @@ import (
 
 // @title			Listing Service API
 // @version		1.0
-// @description	Сервис объявлений о продаже автомобилей kolesa.
+// @description	Сервис объявлений о продаже автомобилей auto-platform.
 // @BasePath		/api/listings
 // @securityDefinitions.apikey	BearerAuth
 // @in							header

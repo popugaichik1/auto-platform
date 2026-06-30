@@ -59,7 +59,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: Сервис аутентификации и регистрации пользователей kolesa.
+  description: Сервис аутентификации и регистрации пользователей auto-platform.
   title: Auth Service API
   version: "1.0"
 paths:

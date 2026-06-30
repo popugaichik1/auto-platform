@@ -18,6 +18,13 @@ func NewProducer(config core_kafka.ProducerConfig) (*Producer, error) {
 		"bootstrap.servers": config.BrokersString(),
 		"partitioner":       "random",
 	}
+
+	if config.SASLEnable {
+    	conf["security.protocol"] = "SASL_SSL"
+    	conf["sasl.mechanisms"]   = config.SASLMechanism
+   	 	conf["sasl.username"]     = config.SASLUsername
+    	conf["sasl.password"]     = config.SASLPassword
+	}
 	p, err := kafka.NewProducer(&conf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create producer: %w", err)

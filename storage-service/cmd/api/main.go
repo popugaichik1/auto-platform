@@ -20,7 +20,7 @@ import (
 
 // @title			Storage Service API
 // @version		1.0
-// @description	Выдаёт presigned-ссылки на загрузку файлов в S3-совместимое хранилище kolesa.
+// @description	Выдаёт presigned-ссылки на загрузку файлов в S3-совместимое хранилище auto-platform.
 // @BasePath		/api/storage
 // @securityDefinitions.apikey	BearerAuth
 // @in							header

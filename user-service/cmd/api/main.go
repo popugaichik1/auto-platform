@@ -23,7 +23,7 @@ import (
 
 // @title			User Service API
 // @version		1.0
-// @description	Сервис профилей пользователей kolesa.
+// @description	Сервис профилей пользователей auto-platform.
 // @BasePath		/api/user
 func main() {
 	cfg := core_config.NewConfigMust()

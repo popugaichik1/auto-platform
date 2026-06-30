@@ -28,7 +28,7 @@ import (
 
 // @title			Messenger Service API
 // @version		1.0
-// @description	Сервис переписки покупателей и продавцов kolesa.
+// @description	Сервис переписки покупателей и продавцов auto-platform.
 // @BasePath		/api/messenger
 // @securityDefinitions.apikey	BearerAuth
 // @in							header

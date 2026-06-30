@@ -173,7 +173,7 @@ definitions:
     type: object
 info:
   contact: {}
-  description: Сервис объявлений о продаже автомобилей kolesa.
+  description: Сервис объявлений о продаже автомобилей auto-platform.
   title: Listing Service API
   version: "1.0"
 paths:

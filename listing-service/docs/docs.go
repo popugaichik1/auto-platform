@@ -669,7 +669,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/listings",
 	Schemes:          []string{},
 	Title:            "Listing Service API",
-	Description:      "Сервис объявлений о продаже автомобилей kolesa.",
+	Description:      "Сервис объявлений о продаже автомобилей auto-platform.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

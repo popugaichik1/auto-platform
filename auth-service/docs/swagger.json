@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Сервис аутентификации и регистрации пользователей kolesa.",
+        "description": "Сервис аутентификации и регистрации пользователей auto-platform.",
         "title": "Auth Service API",
         "contact": {},
         "version": "1.0"
