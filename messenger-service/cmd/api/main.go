@@ -14,6 +14,7 @@ import (
 	core_http_server "messenger-service/internal/core/transport/http/server"
 	core_kafka "messenger-service/internal/core/transport/kafka"
 	listing_client "messenger-service/internal/clients/listing"
+	"messenger-service/internal/grpc/listingpb"
 	messenger_repository "messenger-service/internal/features/messenger/repository"
 	messenger_service "messenger-service/internal/features/messenger/service"
 	messenger_transport_http "messenger-service/internal/features/messenger/transport/http"
@@ -21,6 +22,8 @@ import (
 	messenger_transport_ws "messenger-service/internal/features/messenger/transport/ws"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @title			Messenger Service API
@@ -56,18 +59,30 @@ func main() {
 	}
 	defer postgresPool.Close()
 
-	// Init listing-service client — единственный синхронный поход в другой
+	// Init listing-service gRPC client — единственный синхронный поход в другой
 	// сервис, только чтобы узнать продавца при создании треда.
-	listingURL := os.Getenv("LISTING_SERVICE_URL")
-	if listingURL == "" {
-		logger.Fatal("LISTING_SERVICE_URL is not set")
+	grpCfg := listing_client.NewConfigMust()
+	grpcConn, err := grpc.NewClient(
+		grpCfg.Addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(`{
+			"methodConfig": [{
+				"name": [{"service": "listingpb.ListingService"}],
+				"retryPolicy": {
+					"maxAttempts": 3,
+					"initialBackoff": "0.1s",
+					"maxBackoff": "2s",
+					"backoffMultiplier": 2.0,
+					"retryableStatusCodes": ["UNAVAILABLE"]
+				}
+			}]
+		}`),
+	)
+	if err != nil {
+		logger.Fatal("failed to connect to listing-service gRPC", zap.Error(err))
 	}
-	listingClient := listing_client.NewClient(listingURL, listing_client.RetryConfig{
-		MaxRetries:     3,
-		InitialBackoff: 100 * time.Millisecond,
-		MaxBackoff:     2 * time.Second,
-		Budget:         5 * time.Second,
-	}, logger)
+	defer grpcConn.Close()
+	listingClient := listing_client.NewGRPCClient(listingpb.NewListingServiceClient(grpcConn))
 
 	// Init Kafka producer (публикация message.sent для фан-аута между репликами)
 	kafkaProducer, err := messenger_transport_kafka.NewProducer(core_kafka.NewProducerConfigMust())
