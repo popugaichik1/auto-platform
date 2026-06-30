@@ -1,8 +1,8 @@
-kolesa-platform установлен (релиз: {{ .Release.Name }}, namespace: {{ .Release.Namespace }}).
+auto-platform установлен (релиз: {{ .Release.Name }}, namespace: {{ .Release.Namespace }}).
 
 Сервисы:
 {{- range $key, $svc := .Values.services }}
-  - {{ $key }}: http://{{ include "kolesa.appName" (dict "root" $ "key" $key) }}.{{ $.Release.Namespace }}.svc.cluster.local{{ $svc.routePath }}
+  - {{ $key }}: http://{{ include "auto-platform.appName" (dict "root" $ "key" $key) }}.{{ $.Release.Namespace }}.svc.cluster.local{{ $svc.routePath }}
 {{- end }}
 
 {{- if .Values.ingress.enabled }}
