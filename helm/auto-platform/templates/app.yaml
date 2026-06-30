@@ -172,14 +172,19 @@ spec:
       containers:
         - name: migrate
           image: migrate/migrate:v4.19.1
-          args:
-            - "-path"
-            - "/migrations"
-            - "-database"
-            - "postgres://{{ $svc.postgres.username }}:$(POSTGRES_PASSWORD)@{{ if $svc.postgres.external }}{{ $svc.postgres.host }}{{ else }}{{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}{{ end }}:5432/{{ $svc.postgres.database }}?sslmode={{ $svc.postgres.sslMode | default "disable" }}"
-            - "up"
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              ENCODED=$(printf '%s' "$POSTGRES_PASSWORD_RAW" | od -An -tx1 -v | tr -d ' \n' | fold -w2 | awk '{printf "%%%s", toupper($0)}')
+              exec /migrate -path /migrations \
+                -database "postgres://$POSTGRES_USER:${ENCODED}@{{ if $svc.postgres.external }}{{ $svc.postgres.host }}{{ else }}{{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}{{ end }}:5432/{{ $svc.postgres.database }}?sslmode={{ $svc.postgres.sslMode | default "disable" }}" \
+                up
           env:
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+              value: {{ $svc.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD_RAW
               valueFrom:
                 secretKeyRef:
                   name: {{ include "auto-platform.postgresName" (dict "root" $ "key" $key) }}
