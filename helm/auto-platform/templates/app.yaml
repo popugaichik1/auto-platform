@@ -85,7 +85,7 @@ spec:
                   key: password
             {{- end }}
             {{- if $svc.callsListingService }}
-            - name: LISTING_GRPC_ADDR
+            - name: GRPC_ADDR
               value: "{{ include "auto-platform.appName" (dict "root" $ "key" "listing") }}:{{ $.Values.services.listing.grpcPort }}"
             {{- end }}
             {{- if (and $svc.redis $svc.redis.enabled) }}

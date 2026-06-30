@@ -96,6 +96,7 @@ services:
       TIME_ZONE: "UTC"
       POSTGRES_PORT: "5432"
       POSTGRES_TIMEOUT: "10s"
+      GRPC_ADDR: ":6061"
     redis:
       enabled: true
       port: "6379"
