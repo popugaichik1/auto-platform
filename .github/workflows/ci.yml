@@ -21,6 +21,7 @@ jobs:
       user: ${{ steps.filter.outputs.user }}
       messenger: ${{ steps.filter.outputs.messenger }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      storage: ${{ steps.filter.outputs.storage }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,12 +35,16 @@ jobs:
               - 'auth-service/**'
             listing:
               - 'listing-service/**'
+              - 'proto/**'
             user:
               - 'user-service/**'
             messenger:
               - 'messenger-service/**'
+              - 'proto/**'
             frontend:
               - 'frontend/**'
+            storage:
+              - 'storage-service/**'
   # ─────────────────────────────────────────
   # AUTH SERVICE
   # ─────────────────────────────────────────
