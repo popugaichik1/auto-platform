@@ -1,6 +1,4 @@
 {{- if .Values.ingress.enabled }}
-# Требует allow-snippet-annotations: "true" в ConfigMap ingress-nginx
-# controller'а (отдельная настройка самого контроллера, не этого чарта).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -8,13 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/part-of: auto-platform
-  annotations:
-    # nginx сам минтит ID на каждый запрос — единая точка трассировки для
-    # всех сервисов, независимо от того, защищён путь или нет ($request_id
-    # — встроенная переменная nginx, уникальная на весь запрос, включая
-    # все его саброзапросы).
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Request-ID $request_id;
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
@@ -69,20 +60,6 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/auth-url: "http://{{ include "auto-platform.appName" (dict "root" $ "key" "auth") }}.{{ .Release.Namespace }}.svc.cluster.local/api/auth/validate"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id"
-    # тот же $request_id, что и в публичном Ingress — для финального проксируемого запроса
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Request-ID $request_id;
-    # и для саброзапроса auth_request на auth-url, чтобы auth-service залогировал
-    # проверку токена под тем же ID, что и сам запрос на backend.
-    #
-    # Токен для WS-хендшейка (/api/messenger/ws) сюда НЕ прокидывается через
-    # $arg_token — внутри auth_request-сабреквеста $arg_*/$args относятся к
-    # URI самого сабреквеста (/_external-auth-...), а не к оригинальному
-    # запросу, так что query string там всегда пустая. auth-service достаёт
-    # токен сам из X-Original-URL (его nginx шлёт автоматически, без snippet) —
-    # см. auth-service/.../transport/http/validate.go: extractToken.
-    nginx.ingress.kubernetes.io/auth-snippet: |
-      proxy_set_header X-Request-ID $request_id;
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
