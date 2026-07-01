@@ -35,7 +35,14 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true     # удалять ресурсы, убранные из чарта
-      selfHeal: true   # откатывать ручные изменения в кластере обратно к git
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
