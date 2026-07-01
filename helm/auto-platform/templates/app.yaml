@@ -72,6 +72,8 @@ spec:
               value: {{ $.Values.global.kafka.sasl.enable | quote }}
             - name: KAFKA_SASL_MECHANISM
               value: {{ $.Values.global.kafka.sasl.mechanism | quote }}
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: {{ $.Values.global.kafka.sasl.securityProtocol | default "SASL_PLAINTEXT" | quote }}
             {{- if $.Values.global.kafka.sasl.enable }}
             - name: KAFKA_SASL_USERNAME
               valueFrom:

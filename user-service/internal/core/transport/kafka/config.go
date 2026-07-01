@@ -9,20 +9,22 @@ import (
 
 
 type ConsumerCfg struct {
-    Brokers       []string `envconfig:"BROKERS"        required:"true"`
-    SASLEnable    bool     `envconfig:"SASL_ENABLE"    default:"false"`
-    SASLMechanism string   `envconfig:"SASL_MECHANISM" default:"SCRAM-SHA-512"`
-    SASLUsername  string   `envconfig:"SASL_USERNAME"`
-    SASLPassword  string   `envconfig:"SASL_PASSWORD"`
+    Brokers          []string `envconfig:"BROKERS"           required:"true"`
+    SASLEnable       bool     `envconfig:"SASL_ENABLE"       default:"false"`
+    SASLMechanism    string   `envconfig:"SASL_MECHANISM"    default:"SCRAM-SHA-512"`
+    SASLUsername     string   `envconfig:"SASL_USERNAME"`
+    SASLPassword     string   `envconfig:"SASL_PASSWORD"`
+    SecurityProtocol string   `envconfig:"SECURITY_PROTOCOL" default:"SASL_PLAINTEXT"`
 }
 
 
 type ProducerConfig struct {
-    Brokers       []string `envconfig:"BROKERS"        required:"true"`
-    SASLEnable    bool     `envconfig:"SASL_ENABLE"    default:"false"`
-    SASLMechanism string   `envconfig:"SASL_MECHANISM" default:"SCRAM-SHA-512"`
-    SASLUsername  string   `envconfig:"SASL_USERNAME"`
-    SASLPassword  string   `envconfig:"SASL_PASSWORD"`
+    Brokers          []string `envconfig:"BROKERS"           required:"true"`
+    SASLEnable       bool     `envconfig:"SASL_ENABLE"       default:"false"`
+    SASLMechanism    string   `envconfig:"SASL_MECHANISM"    default:"SCRAM-SHA-512"`
+    SASLUsername     string   `envconfig:"SASL_USERNAME"`
+    SASLPassword     string   `envconfig:"SASL_PASSWORD"`
+    SecurityProtocol string   `envconfig:"SECURITY_PROTOCOL" default:"SASL_PLAINTEXT"`
 }
 
 

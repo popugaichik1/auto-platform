@@ -45,7 +45,7 @@ func NewConsumer(config core_kafka.ConsumerCfg, hub Hub, topic string, log *core
 		"session.timeout.ms":       6000,
 	}
 	if config.SASLEnable {
-    	conf["security.protocol"] = "SASL_SSL"
+    	conf["security.protocol"] = config.SecurityProtocol
     	conf["sasl.mechanisms"]   = config.SASLMechanism
     	conf["sasl.username"]     = config.SASLUsername
     	conf["sasl.password"]     = config.SASLPassword

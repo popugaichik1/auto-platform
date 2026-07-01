@@ -20,7 +20,7 @@ func NewProducer(config core_kafka.ProducerConfig) (*Producer, error) {
 	}
 
 	if config.SASLEnable {
-    	conf["security.protocol"] = "SASL_SSL"
+    	conf["security.protocol"] = config.SecurityProtocol
     	conf["sasl.mechanisms"]   = config.SASLMechanism
    	 	conf["sasl.username"]     = config.SASLUsername
     	conf["sasl.password"]     = config.SASLPassword

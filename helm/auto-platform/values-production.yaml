@@ -20,6 +20,7 @@ global:
     sasl:
       enable: true
       mechanism: "SCRAM-SHA-512"
+      securityProtocol: "SASL_PLAINTEXT"
   # Secret'ы (JWT_SECRET, пароли Postgres, S3-ключи) кладёт Sealed Secrets
   # controller из templates/sealed-secrets.yaml — сам чарт их не создаёт
   # из CHANGE_ME-значений в values.yaml.
