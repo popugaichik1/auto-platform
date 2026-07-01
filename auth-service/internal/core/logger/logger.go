@@ -56,45 +56,43 @@ func FromContext(ctx context.Context) *Logger {
 	return log
 }
 
-// NewLogger создаёт логгер, который пишет в stdout и в файл одновременно.
-// Каждый запуск создаёт новый лог-файл с именем вида "2006-01-02T15-04-05.000000.log".
-//
-// zapcore.NewTee объединяет несколько «ядер» (outputs) в одно:
-// запись в одно ядро — автоматически запись во все.
+// NewLogger создаёт логгер. Если config.Folder пустой — пишет только в stdout.
+// Если Folder задан — пишет одновременно в stdout и в файл.
 func NewLogger(config Config) (*Logger, error) {
 	zapLvl := zap.NewAtomicLevel()
 	if err := zapLvl.UnmarshalText([]byte(config.Level)); err != nil {
 		return nil, fmt.Errorf("unmarshal log level: %w", err)
 	}
 
-	if err := os.MkdirAll(config.Folder, 0755); err != nil {
-		return nil, fmt.Errorf("mkdir log folder: %w", err)
-	}
-
-	timestamp := time.Now().UTC().Format("2006-01-02T15-04-05.000000")
-	logFilePath := filepath.Join(
-		config.Folder,
-		fmt.Sprintf("%s.log", timestamp),
-	)
-
-	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return nil, fmt.Errorf("open log file: %w", err)
-	}
-
 	zapConfig := zap.NewDevelopmentEncoderConfig()
 	zapConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02T15:04:05.000000")
-
-	// ConsoleEncoder — человекочитаемый формат (не JSON), удобен для разработки.
 	zapEncoder := zapcore.NewConsoleEncoder(zapConfig)
 
-	// NewTee направляет логи одновременно в stdout и в файл.
-	core := zapcore.NewTee(
-		zapcore.NewCore(zapEncoder, zapcore.AddSync(os.Stdout), zapLvl),
-		zapcore.NewCore(zapEncoder, zapcore.AddSync(logFile), zapLvl),
-	)
+	stdoutCore := zapcore.NewCore(zapEncoder, zapcore.AddSync(os.Stdout), zapLvl)
 
-	// zap.AddCaller() добавляет к каждому сообщению имя файла и строку.
+	var logFile *os.File
+	var core zapcore.Core
+
+	if config.Folder == "" {
+		core = stdoutCore
+	} else {
+		if err := os.MkdirAll(config.Folder, 0755); err != nil {
+			return nil, fmt.Errorf("mkdir log folder: %w", err)
+		}
+
+		timestamp := time.Now().UTC().Format("2006-01-02T15-04-05.000000")
+		logFilePath := filepath.Join(config.Folder, fmt.Sprintf("%s.log", timestamp))
+
+		var err error
+		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return nil, fmt.Errorf("open log file: %w", err)
+		}
+
+		fileCore := zapcore.NewCore(zapEncoder, zapcore.AddSync(logFile), zapLvl)
+		core = zapcore.NewTee(stdoutCore, fileCore)
+	}
+
 	zapLogger := zap.New(core, zap.AddCaller())
 
 	return &Logger{
@@ -113,9 +111,11 @@ func (l *Logger) With(field ...zap.Field) *Logger {
 	}
 }
 
-// Close закрывает файл логов. Должен вызываться через defer в main().
+// Close закрывает файл логов (если он открыт). Должен вызываться через defer в main().
 func (l *Logger) Close() {
-	if err := l.file.Close(); err != nil {
-		fmt.Println("failed to close application logger:", err)
+	if l.file != nil {
+		if err := l.file.Close(); err != nil {
+			fmt.Println("failed to close application logger:", err)
+		}
 	}
 }
