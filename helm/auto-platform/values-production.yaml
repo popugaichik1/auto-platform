@@ -62,4 +62,4 @@ services:
       tag: "4d15a6500e9a7b413060ed0980fe9522aa4e776c"
 frontend:
   image:
-    tag: "4d15a6500e9a7b413060ed0980fe9522aa4e776c"
+    tag: "afaec57d8f8da96d3cea499b6946c2f940526511"
