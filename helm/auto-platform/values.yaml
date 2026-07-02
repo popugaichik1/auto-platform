@@ -8,7 +8,7 @@ global:
   # Timeweb (Network > Managed Kafka). Если сервис требует SASL/TLS —
   # это нужно будет добавить отдельно в core_kafka.ProducerConfig/ConsumerConfig
   # сервисов (сейчас там только bootstrap.servers, без аутентификации).
-  kafkaBrokers: "186.246.8.134"
+  kafkaBrokers: "186.246.8.134:9092"
   kafka:
     sasl:
       enable: false
@@ -73,7 +73,7 @@ services:
       host: ""            
       sslMode: "disable"   
       database: auth_db
-      username: gen_user
+      username: pg_user
 
   listing:
     image:
@@ -107,7 +107,7 @@ services:
       host: ""            
       sslMode: "disable"   
       database: listing_db
-      username: gen_user
+      username: pg_user
 
   user:
     image:
@@ -136,7 +136,7 @@ services:
       host: ""            
       sslMode: "disable"   
       database: user_db
-      username: gen_user
+      username: pg_user
 
   messenger:
     image:
@@ -169,7 +169,7 @@ services:
       host: ""            
       sslMode: "disable"   
       database: messenger_db
-      username: gen_user
+      username: pg_user
 
   storage:
     image:

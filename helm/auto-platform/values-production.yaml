@@ -64,3 +64,4 @@ services:
 frontend:
   image:
     tag: "afaec57d8f8da96d3cea499b6946c2f940526511"
+  enabled: false
