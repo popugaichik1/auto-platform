@@ -16,7 +16,7 @@ ingress:
 global:
   imagePullSecrets:
     - name: ghcr-pull-secret
-  kafkaBrokers: "192.168.0.7:9092"
+  kafkaBrokers: "194.87.187.37:9092"
   kafka:
     sasl:
       enable: true
@@ -35,28 +35,28 @@ services:
       tag: "92fce456a0763ad586f04c42fbd3cfd242b31f0f"
     postgres:
       external: true
-      host: "186.246.8.193"
+      host: "192.168.0.4"
       sslMode: "require"
   listing:
     image:
       tag: "92fce456a0763ad586f04c42fbd3cfd242b31f0f"
     postgres:
       external: true
-      host: "186.246.8.193"
+      host: "192.168.0.4"
       sslMode: "require"
   user:
     image:
       tag: "92fce456a0763ad586f04c42fbd3cfd242b31f0f"
     postgres:
       external: true
-      host: "186.246.8.193"
+      host: "192.168.0.4"
       sslMode: "require"
   messenger:
     image:
       tag: "92fce456a0763ad586f04c42fbd3cfd242b31f0f"
     postgres:
       external: true
-      host: "186.246.8.193"
+      host: "192.168.0.4"
       sslMode: "require"
   storage:
     image:
