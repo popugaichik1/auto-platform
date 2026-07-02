@@ -21,8 +21,6 @@ global:
 
 services:
   auth:
-    image:
-      tag: "latest"
     postgres:
       external: false
       sslMode: "disable"
@@ -32,8 +30,6 @@ services:
         limits: { cpu: 200m, memory: 256Mi }
       storageSize: "1Gi"
   listing:
-    image:
-      tag: "latest"
     postgres:
       external: false
       sslMode: "disable"
@@ -43,8 +39,6 @@ services:
         limits: { cpu: 200m, memory: 256Mi }
       storageSize: "1Gi"
   user:
-    image:
-      tag: "latest"
     postgres:
       external: false
       sslMode: "disable"
@@ -54,8 +48,6 @@ services:
         limits: { cpu: 200m, memory: 256Mi }
       storageSize: "1Gi"
   messenger:
-    image:
-      tag: "latest"
     postgres:
       external: false
       sslMode: "disable"
@@ -64,11 +56,5 @@ services:
         requests: { cpu: 50m, memory: 64Mi }
         limits: { cpu: 200m, memory: 256Mi }
       storageSize: "1Gi"
-  storage:
-    image:
-      tag: "latest"
-
 frontend:
   enabled: false
-  image:
-    tag: "latest"
