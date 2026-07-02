@@ -1,0 +1,74 @@
+# Оверрай для кластера с БД внутри Kubernetes (без Managed PostgreSQL Timeweb).
+# Накладывается поверх values.yaml вместо values-production.yaml.
+#
+# ArgoCD: поменяй valueFiles в argocd/application.yaml:
+#   - values.yaml
+#   - values-production-self-hosted.yaml
+
+ingress:
+  host: "auto-platform.kuber-cluster.website"
+
+global:
+  imagePullSecrets:
+    - name: ghcr-pull-secret
+  kafkaBrokers: "194.87.187.37:9092"
+  kafka:
+    sasl:
+      enable: true
+      mechanism: "SCRAM-SHA-512"
+      securityProtocol: "SASL_PLAINTEXT"
+  secretsManagedExternally: true
+
+services:
+  auth:
+    image:
+      tag: "latest"
+    postgres:
+      external: false
+      sslMode: "disable"
+
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { cpu: 200m, memory: 256Mi }
+      storageSize: "1Gi"
+  listing:
+    image:
+      tag: "latest"
+    postgres:
+      external: false
+      sslMode: "disable"
+
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { cpu: 200m, memory: 256Mi }
+      storageSize: "1Gi"
+  user:
+    image:
+      tag: "latest"
+    postgres:
+      external: false
+      sslMode: "disable"
+
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { cpu: 200m, memory: 256Mi }
+      storageSize: "1Gi"
+  messenger:
+    image:
+      tag: "latest"
+    postgres:
+      external: false
+      sslMode: "disable"
+
+      resources:
+        requests: { cpu: 50m, memory: 64Mi }
+        limits: { cpu: 200m, memory: 256Mi }
+      storageSize: "1Gi"
+  storage:
+    image:
+      tag: "latest"
+
+frontend:
+  enabled: false
+  image:
+    tag: "latest"
